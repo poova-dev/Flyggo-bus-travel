@@ -517,9 +517,10 @@ window.handleAdminUpload = async function() {
       method: 'POST',
       body: formData
     });
-    const data = await res.json();
-
-    if (!data.secure_url) throw new Error('Cloudinary response missing secure URL');
+    if (!data.secure_url) {
+      const errMsg = data.error?.message || 'Response missing secure URL';
+      throw new Error(errMsg);
+    }
 
     // Add directly to database as approved: true
     await addDoc(collection(db, 'gallery'), {

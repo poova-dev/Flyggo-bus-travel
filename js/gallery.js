@@ -111,7 +111,10 @@ window.handleGalleryUpload = async function(e) {
       const res  = await fetch(`https://api.cloudinary.com/v1_1/${CLOUD_NAME}/image/upload`, { method:'POST', body:formData });
       const data = await res.json();
 
-      if (!data.secure_url) throw new Error('Cloudinary upload failed');
+      if (!data.secure_url) {
+        const errMsg = data.error?.message || 'Upload failed';
+        throw new Error(errMsg);
+      }
 
       // Save to Firestore
       await addDoc(collection(db, 'gallery'), {

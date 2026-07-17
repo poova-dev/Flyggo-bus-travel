@@ -26,8 +26,8 @@ export const auth = getAuth(app);
 // CLOUDINARY CONFIG — Update with your credentials
 // ============================================================
 export const CLOUDINARY_CONFIG = {
-  cloudName: "YOUR_CLOUD_NAME",          // e.g. "dxyz123"
-  uploadPreset: "flyggo_gallery",         // Create this in Cloudinary dashboard
+  cloudName: "dxyz123abc",   // ← paste yours here
+  uploadPreset: "flyggo_gallery",
   folder: "flyggo/gallery"
 };
 
