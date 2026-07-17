@@ -1,0 +1,356 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Contact Us — Flyggo Bus Travel</title>
+  <meta name="description" content="Contact Flyggo Bus Travel for bookings, complaints, lost luggage and helpline. Available 24x7.">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🚌</text></svg>">
+  <link rel="stylesheet" href="css/index.css">
+  <style>
+    body { background: var(--clr-bg); }
+    .contact-page { padding-top: var(--nav-height); min-height: 100vh; }
+
+    .contact-hero {
+      background: linear-gradient(120deg, #1A1A2E, #16213E);
+      padding: var(--sp-3xl) 0;
+      color: #fff;
+    }
+    .contact-hero h1 { color: #fff; font-size: clamp(1.8rem,4vw,2.8rem); margin-bottom: var(--sp-sm); }
+    .contact-hero p  { color: rgba(255,255,255,0.65); font-size:1rem; }
+
+    .contact-main { padding: var(--sp-3xl) 0; }
+    .contact-grid {
+      display: grid;
+      grid-template-columns: 1fr 420px;
+      gap: var(--sp-3xl);
+      align-items: start;
+    }
+    @media (max-width: 900px) { .contact-grid { grid-template-columns: 1fr; } }
+
+    .contact-form-card {
+      background: #fff;
+      border: 1px solid var(--clr-border);
+      border-radius: var(--radius-xl);
+      padding: var(--sp-2xl);
+      box-shadow: var(--shadow-card);
+    }
+    .contact-form-card h2 { font-size: 1.2rem; font-weight: 700; margin-bottom: var(--sp-xs); }
+    .contact-form-card p  { font-size: 0.85rem; color: var(--clr-text-secondary); margin-bottom: var(--sp-xl); }
+
+    .contact-info-card {
+      background: #fff;
+      border: 1px solid var(--clr-border);
+      border-radius: var(--radius-xl);
+      overflow: hidden;
+      box-shadow: var(--shadow-card);
+    }
+    .contact-info-header {
+      background: var(--clr-primary);
+      padding: var(--sp-xl);
+      color: #fff;
+    }
+    .contact-info-header h3 { color: #fff; font-size: 1.1rem; font-weight: 700; margin-bottom: 4px; }
+    .contact-info-header p  { color: rgba(255,255,255,0.8); font-size: 0.82rem; }
+
+    .contact-info-body { padding: var(--sp-xl); }
+    .contact-info-item {
+      display: flex;
+      align-items: flex-start;
+      gap: var(--sp-md);
+      padding: var(--sp-md) 0;
+      border-bottom: 1px solid var(--clr-border);
+    }
+    .contact-info-item:last-child { border-bottom: none; }
+    .ci-icon {
+      width: 42px; height: 42px;
+      background: var(--clr-primary-bg);
+      border: 1px solid var(--clr-primary-border);
+      border-radius: var(--radius-md);
+      display: grid; place-items: center;
+      font-size: 1.1rem;
+      flex-shrink: 0;
+    }
+    .ci-label { font-size: 0.72rem; color: var(--clr-text-muted); text-transform: uppercase; letter-spacing: 0.05em; font-weight: 600; margin-bottom: 2px; }
+    .ci-value { font-size: 0.9rem; font-weight: 600; color: var(--clr-text-dark); }
+    .ci-sub   { font-size: 0.75rem; color: var(--clr-text-muted); margin-top: 1px; }
+
+    /* Office Map placeholder */
+    .map-box {
+      width: 100%;
+      height: 200px;
+      background: linear-gradient(135deg, #e8eaf6, #e3f2fd);
+      border-radius: var(--radius-lg);
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      color: var(--clr-text-muted);
+      font-size: 0.82rem;
+      margin-top: var(--sp-xl);
+      border: 1px solid var(--clr-border);
+      gap: var(--sp-sm);
+    }
+
+    /* FAQ */
+    .faq-section { padding: var(--sp-3xl) 0; background: var(--clr-bg); }
+    .faq-item {
+      background: #fff;
+      border: 1px solid var(--clr-border);
+      border-radius: var(--radius-lg);
+      margin-bottom: var(--sp-sm);
+      overflow: hidden;
+    }
+    .faq-q {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: var(--sp-lg) var(--sp-xl);
+      cursor: pointer;
+      font-weight: 600;
+      font-size: 0.9rem;
+      color: var(--clr-text-dark);
+      transition: all var(--transition-fast);
+    }
+    .faq-q:hover { background: var(--clr-primary-bg); }
+    .faq-q.open  { color: var(--clr-primary); }
+    .faq-q .chevron { transition: transform var(--transition-base); font-size: 0.8rem; color: var(--clr-text-muted); }
+    .faq-q.open .chevron { transform: rotate(180deg); color: var(--clr-primary); }
+    .faq-a {
+      padding: 0 var(--sp-xl);
+      max-height: 0;
+      overflow: hidden;
+      transition: max-height 0.35s ease, padding 0.2s ease;
+      font-size: 0.875rem;
+      color: var(--clr-text-secondary);
+      line-height: 1.7;
+    }
+    .faq-a.open { max-height: 300px; padding: var(--sp-sm) var(--sp-xl) var(--sp-lg); }
+  </style>
+</head>
+<body>
+<nav class="navbar" id="navbar">
+  <div class="container">
+    <a href="index.html" class="nav-logo"><div class="logo-box">🚌</div>Flyggo</a>
+    <div class="nav-links">
+      <a href="index.html">Home</a>
+      <a href="booking.html">Book Tickets</a>
+      <a href="gallery.html">Gallery</a>
+      <a href="contact.html" class="active">Contact</a>
+    </div>
+    <div class="nav-actions">
+      <button class="btn btn-outline btn-sm" id="nav-auth-btn" onclick="openAuthModal()">Sign In</button>
+      <a href="booking.html" class="btn btn-primary btn-sm">Book Now</a>
+    </div>
+  </div>
+</nav>
+
+<main class="contact-page">
+  <div class="contact-hero">
+    <div class="container">
+      <div class="section-tag" style="background:rgba(255,255,255,0.1);border-color:rgba(255,255,255,0.2);color:rgba(255,255,255,0.9);">📞 Get In Touch</div>
+      <h1>We're Here to Help</h1>
+      <p>Our 24×7 helpline is ready to assist you with bookings, cancellations, complaints and lost luggage.</p>
+    </div>
+  </div>
+
+  <div class="contact-main">
+    <div class="container">
+      <div class="contact-grid">
+        <!-- Contact Form -->
+        <div class="contact-form-card reveal">
+          <h2>Send us a Message</h2>
+          <p>We'll get back to you within 2 business hours.</p>
+
+          <form id="contact-form" onsubmit="submitContact(event)">
+            <div class="grid-2 mb-md" style="gap:var(--sp-md);">
+              <div class="form-group">
+                <label class="form-label">Full Name *</label>
+                <input type="text" class="form-control" id="c-name" placeholder="Ramesh Kumar" required>
+              </div>
+              <div class="form-group">
+                <label class="form-label">Mobile Number *</label>
+                <input type="tel" class="form-control" id="c-phone" placeholder="9876543210" maxlength="10" required>
+              </div>
+            </div>
+            <div class="form-group mb-md">
+              <label class="form-label">Email Address</label>
+              <input type="email" class="form-control" id="c-email" placeholder="ramesh@gmail.com">
+            </div>
+            <div class="form-group mb-md">
+              <label class="form-label">Subject *</label>
+              <select class="form-control" id="c-subject" required>
+                <option value="">— Select a topic —</option>
+                <option value="booking">Booking Help</option>
+                <option value="cancellation">Cancellation / Refund</option>
+                <option value="complaint">Complaint Against Bus Operator</option>
+                <option value="luggage">Lost Luggage</option>
+                <option value="feedback">General Feedback</option>
+                <option value="other">Other</option>
+              </select>
+            </div>
+            <div class="form-group mb-lg">
+              <label class="form-label">Message *</label>
+              <textarea class="form-control" id="c-message" placeholder="Describe your issue or feedback in detail…" required></textarea>
+            </div>
+            <button type="submit" class="btn btn-primary btn-lg w-full" id="contact-submit-btn" style="border-radius:var(--radius-full);">
+              Send Message →
+            </button>
+          </form>
+        </div>
+
+        <!-- Contact Info -->
+        <div>
+          <div class="contact-info-card reveal">
+            <div class="contact-info-header">
+              <h3>Contact Flyggo Helpline</h3>
+              <p>Available 24 hours, 7 days a week</p>
+            </div>
+            <div class="contact-info-body">
+              <div class="contact-info-item">
+                <div class="ci-icon">📞</div>
+                <div>
+                  <div class="ci-label">Customer Helpline</div>
+                  <div class="ci-value"><a href="tel:+914412345678" style="color:var(--clr-primary);">044-1234-5678</a></div>
+                  <div class="ci-sub">Toll-free · 24×7 support</div>
+                </div>
+              </div>
+              <div class="contact-info-item">
+                <div class="ci-icon">✉️</div>
+                <div>
+                  <div class="ci-label">Email Support</div>
+                  <div class="ci-value"><a href="mailto:support@flyggo.in" style="color:var(--clr-primary);">support@flyggo.in</a></div>
+                  <div class="ci-sub">Reply within 2 hours</div>
+                </div>
+              </div>
+              <div class="contact-info-item">
+                <div class="ci-icon">💬</div>
+                <div>
+                  <div class="ci-label">WhatsApp</div>
+                  <div class="ci-value"><a href="https://wa.me/919876543210" style="color:var(--clr-green);">+91 98765 43210</a></div>
+                  <div class="ci-sub">Chat support, 8 AM – 10 PM</div>
+                </div>
+              </div>
+              <div class="contact-info-item">
+                <div class="ci-icon">📍</div>
+                <div>
+                  <div class="ci-label">Head Office</div>
+                  <div class="ci-value">Flyggo Bus Travel Pvt. Ltd.</div>
+                  <div class="ci-sub">No. 12, Anna Salai, Teynampet<br>Chennai — 600002, Tamil Nadu</div>
+                </div>
+              </div>
+              <div class="contact-info-item">
+                <div class="ci-icon">🕐</div>
+                <div>
+                  <div class="ci-label">Office Hours</div>
+                  <div class="ci-value">Mon–Sat: 9 AM – 7 PM</div>
+                  <div class="ci-sub">Closed on Sundays & Public Holidays</div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="map-box reveal mt-lg" style="transition-delay:0.1s">
+            <span style="font-size:2rem;">🗺</span>
+            <span>Chennai Head Office</span>
+            <span style="font-size:0.75rem;">Anna Salai, Teynampet, Chennai 600002</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</main>
+
+<!-- FAQ Section -->
+<section class="faq-section">
+  <div class="container">
+    <div class="section-header reveal">
+      <div class="section-tag">❓ FAQ</div>
+      <h2 class="section-title">Frequently Asked <span class="highlight">Questions</span></h2>
+    </div>
+    <div style="max-width:720px;margin:0 auto;">
+      <div class="faq-item reveal">
+        <div class="faq-q" onclick="toggleFaq(this)">How do I cancel my Flyggo ticket? <span class="chevron">▼</span></div>
+        <div class="faq-a">Go to "My Bookings" in your account, select the booking and click "Cancel Ticket". Refund is processed within 24–48 hours to your original payment method. Free cancellation is available up to 2 hours before departure.</div>
+      </div>
+      <div class="faq-item reveal" style="transition-delay:0.05s">
+        <div class="faq-q" onclick="toggleFaq(this)">Where do I collect my e-ticket? <span class="chevron">▼</span></div>
+        <div class="faq-a">Your e-ticket is sent instantly to your registered email and mobile number via SMS. You can also find it under "My Bookings" in your Flyggo account. No printout is required — show the e-ticket on your mobile at the boarding point.</div>
+      </div>
+      <div class="faq-item reveal" style="transition-delay:0.1s">
+        <div class="faq-q" onclick="toggleFaq(this)">What is the luggage allowance? <span class="chevron">▼</span></div>
+        <div class="faq-a">Each passenger is allowed one bag up to 20 kg and one small cabin bag up to 5 kg. Additional luggage is charged separately by the bus operator at the boarding point. Flyggo is not responsible for any luggage left unattended.</div>
+      </div>
+      <div class="faq-item reveal" style="transition-delay:0.15s">
+        <div class="faq-q" onclick="toggleFaq(this)">How early should I reach the boarding point? <span class="chevron">▼</span></div>
+        <div class="faq-a">We recommend arriving at the boarding point at least 15 minutes before the scheduled departure. Buses depart on time, and seats may be forfeited if you are late. Use the Flyggo app for live bus tracking.</div>
+      </div>
+      <div class="faq-item reveal" style="transition-delay:0.2s">
+        <div class="faq-q" onclick="toggleFaq(this)">Is Flyggo available outside Tamil Nadu? <span class="chevron">▼</span></div>
+        <div class="faq-a">Currently, Flyggo operates exclusively on Tamil Nadu intercity routes. We are expanding to Karnataka, Andhra Pradesh and Kerala soon. Stay tuned for updates on our website and social media channels.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<footer class="site-footer">
+  <div class="container">
+    <div class="footer-bottom" style="border-top:none;padding-top:0;">
+      <p>© 2026 Flyggo Bus Travel. All rights reserved. Made with ❤️ in Tamil Nadu 🇮🇳</p>
+      <p><a href="index.html" style="color:rgba(255,255,255,0.5);">← Back to Home</a></p>
+    </div>
+  </div>
+</footer>
+
+<div id="toast-container"></div>
+<script type="module" src="js/auth.js"></script>
+<script type="module">
+  import { db } from './js/firebase-config.js';
+  import { collection, addDoc, serverTimestamp } from 'https://www.gstatic.com/firebasejs/11.0.0/firebase-firestore.js';
+
+  window.submitContact = async (e) => {
+    e.preventDefault();
+    const btn = document.getElementById('contact-submit-btn');
+    btn.classList.add('loading'); btn.disabled = true;
+    try {
+      await addDoc(collection(db, 'contact_messages'), {
+        name:    document.getElementById('c-name').value.trim(),
+        phone:   document.getElementById('c-phone').value.trim(),
+        email:   document.getElementById('c-email').value.trim(),
+        subject: document.getElementById('c-subject').value,
+        message: document.getElementById('c-message').value.trim(),
+        created_at: serverTimestamp(),
+        status: 'unread',
+      });
+      showToast('✅ Message sent! We will get back to you within 2 hours.', 'success');
+      document.getElementById('contact-form').reset();
+    } catch(err) {
+      showToast('Failed to send message. Please call our helpline.', 'error');
+    } finally {
+      btn.classList.remove('loading'); btn.disabled = false;
+    }
+  };
+</script>
+<script>
+  window.showToast = function(msg, type='info') {
+    const icons = { success:'✅', error:'❌', info:'ℹ️' };
+    const t = document.createElement('div');
+    t.className = `toast ${type}`;
+    t.innerHTML = `<span class="toast-icon">${icons[type]||'ℹ️'}</span><span class="toast-msg">${msg}</span>`;
+    document.getElementById('toast-container').appendChild(t);
+    setTimeout(() => t.remove(), 5000);
+  };
+
+  function toggleFaq(q) {
+    const a = q.nextElementSibling;
+    q.classList.toggle('open');
+    a.classList.toggle('open');
+  }
+
+  const obs = new IntersectionObserver(entries => entries.forEach(e => {
+    if (e.isIntersecting) e.target.classList.add('visible');
+  }), { threshold: 0.08 });
+  document.querySelectorAll('.reveal').forEach(el => obs.observe(el));
+
+  function openAuthModal()  { /* auth modal if needed */ }
+</script>
+</body>
+</html>

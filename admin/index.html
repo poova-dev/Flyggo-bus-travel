@@ -1,0 +1,520 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin Panel — Flyggo Bus Travel</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>⚙️</text></svg>">
+  <link rel="stylesheet" href="../css/index.css">
+  <style>
+    body { background: var(--clr-bg); }
+
+    /* Admin Layout */
+    .admin-shell { display: flex; min-height: 100vh; }
+
+    /* Sidebar */
+    .admin-sidebar {
+      width: 240px;
+      background: #1A1A2E;
+      flex-shrink: 0;
+      display: flex;
+      flex-direction: column;
+      position: fixed;
+      top: 0; bottom: 0; left: 0;
+      z-index: 100;
+      overflow-y: auto;
+    }
+    .admin-logo {
+      padding: var(--sp-xl);
+      display: flex;
+      align-items: center;
+      gap: var(--sp-sm);
+      font-family: var(--font-heading);
+      font-size: 1.25rem;
+      font-weight: 800;
+      color: #fff;
+      border-bottom: 1px solid rgba(255,255,255,0.08);
+    }
+    .admin-logo .logo-badge {
+      background: var(--clr-primary);
+      padding: 3px 8px;
+      border-radius: var(--radius-xs);
+      font-size: 0.65rem;
+      font-weight: 700;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+      margin-left: auto;
+    }
+    .admin-nav { flex: 1; padding: var(--sp-md) 0; }
+    .admin-nav-section { padding: var(--sp-sm) var(--sp-lg); font-size: 0.65rem; font-weight: 700; color: rgba(255,255,255,0.3); letter-spacing: 0.1em; text-transform: uppercase; margin-top: var(--sp-lg); margin-bottom: var(--sp-xs); }
+    .admin-nav-link {
+      display: flex;
+      align-items: center;
+      gap: var(--sp-md);
+      padding: 10px var(--sp-lg);
+      color: rgba(255,255,255,0.6);
+      font-size: 0.875rem;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all var(--transition-fast);
+      text-decoration: none;
+    }
+    .admin-nav-link .link-icon { font-size: 1rem; width: 22px; text-align: center; }
+    .admin-nav-link:hover, .admin-nav-link.active {
+      background: rgba(216,67,21,0.15);
+      color: #fff;
+      border-left: 3px solid var(--clr-primary);
+      padding-left: calc(var(--sp-lg) - 3px);
+    }
+    .admin-signout {
+      padding: var(--sp-lg);
+      border-top: 1px solid rgba(255,255,255,0.08);
+    }
+
+    /* Main Content */
+    .admin-main {
+      margin-left: 240px;
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      min-height: 100vh;
+    }
+    .admin-topbar {
+      background: #fff;
+      border-bottom: 1px solid var(--clr-border);
+      padding: 0 var(--sp-xl);
+      height: 64px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      position: sticky;
+      top: 0; z-index: 50;
+      box-shadow: var(--shadow-xs);
+    }
+    .admin-page-title { font-size: 1rem; font-weight: 700; color: var(--clr-text-dark); }
+    .admin-user-info  { display: flex; align-items: center; gap: var(--sp-sm); font-size: 0.82rem; color: var(--clr-text-secondary); }
+    .admin-avatar {
+      width: 34px; height: 34px;
+      background: var(--clr-primary);
+      border-radius: 50%;
+      display: grid; place-items: center;
+      color: #fff; font-weight: 700; font-size: 0.875rem;
+    }
+
+    .admin-content { padding: var(--sp-xl); flex: 1; }
+
+    /* Stat Cards */
+    .stat-cards { display: grid; grid-template-columns: repeat(4, 1fr); gap: var(--sp-md); margin-bottom: var(--sp-xl); }
+    @media (max-width: 1100px) { .stat-cards { grid-template-columns: repeat(2,1fr); } }
+    .stat-card {
+      background: #fff;
+      border: 1px solid var(--clr-border);
+      border-radius: var(--radius-lg);
+      padding: var(--sp-lg) var(--sp-xl);
+      display: flex;
+      align-items: flex-start;
+      gap: var(--sp-md);
+      box-shadow: var(--shadow-xs);
+    }
+    .stat-icon {
+      width: 48px; height: 48px;
+      border-radius: var(--radius-md);
+      display: grid; place-items: center;
+      font-size: 1.4rem;
+      flex-shrink: 0;
+    }
+    .stat-icon.red    { background: var(--clr-primary-bg); }
+    .stat-icon.green  { background: var(--clr-green-bg); }
+    .stat-icon.orange { background: #FFF3E0; }
+    .stat-icon.purple { background: #F3E8FF; }
+    .stat-num { font-size: 1.8rem; font-weight: 800; font-family: var(--font-heading); color: var(--clr-text-dark); line-height: 1; }
+    .stat-lbl { font-size: 0.78rem; color: var(--clr-text-muted); margin-top: 2px; font-weight: 500; }
+    .stat-change { font-size: 0.72rem; color: var(--clr-green); font-weight: 600; margin-top: 4px; }
+
+    /* Data Table */
+    .data-card {
+      background: #fff;
+      border: 1px solid var(--clr-border);
+      border-radius: var(--radius-lg);
+      box-shadow: var(--shadow-xs);
+      margin-bottom: var(--sp-lg);
+    }
+    .data-card-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: var(--sp-md) var(--sp-xl);
+      border-bottom: 1px solid var(--clr-border);
+    }
+    .data-card-title { font-size: 0.9rem; font-weight: 700; }
+    .data-table { width: 100%; border-collapse: collapse; }
+    .data-table th {
+      padding: 10px var(--sp-xl);
+      font-size: 0.72rem;
+      font-weight: 700;
+      color: var(--clr-text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      text-align: left;
+      background: var(--clr-surface);
+      border-bottom: 1px solid var(--clr-border);
+    }
+    .data-table td {
+      padding: 12px var(--sp-xl);
+      font-size: 0.82rem;
+      color: var(--clr-text-secondary);
+      border-bottom: 1px solid var(--clr-border);
+      vertical-align: middle;
+    }
+    .data-table tr:last-child td { border-bottom: none; }
+    .data-table tr:hover td { background: var(--clr-surface); }
+    .status-pill {
+      padding: 3px 10px;
+      border-radius: var(--radius-full);
+      font-size: 0.7rem;
+      font-weight: 700;
+    }
+    .status-confirmed { background: var(--clr-green-bg); color: var(--clr-green); }
+    .status-pending   { background: #FFF3E0; color: var(--clr-orange); }
+    .status-cancelled { background: var(--clr-primary-bg); color: var(--clr-primary); }
+
+    /* Section switching */
+    .admin-section { display: none; }
+    .admin-section.active { display: block; }
+
+    /* Loader guard */
+    .auth-guard { display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 100vh; background: #fff; gap: var(--sp-lg); }
+    .auth-guard h2 { font-size: 1.2rem; color: var(--clr-text-dark); }
+    .auth-guard p  { font-size: 0.85rem; color: var(--clr-text-secondary); }
+  </style>
+</head>
+<body>
+
+<!-- Auth guard -->
+<div id="auth-guard" class="auth-guard">
+  <div style="font-size:3rem;">🔐</div>
+  <h2>Admin Access Only</h2>
+  <p>Checking your credentials…</p>
+  <div class="spinner"></div>
+</div>
+
+<div id="admin-app" style="display:none;">
+<div class="admin-shell">
+  <!-- Sidebar -->
+  <aside class="admin-sidebar">
+    <div class="admin-logo">
+      🚌 Flyggo
+      <span class="admin-logo-badge logo-badge">Admin</span>
+    </div>
+    <nav class="admin-nav">
+      <div class="admin-nav-section">Dashboard</div>
+      <a class="admin-nav-link active" onclick="showSection('dashboard',this)">
+        <span class="link-icon">📊</span> Overview
+      </a>
+
+      <div class="admin-nav-section">Operations</div>
+      <a class="admin-nav-link" onclick="showSection('bookings',this)">
+        <span class="link-icon">🎫</span> Bookings
+      </a>
+      <a class="admin-nav-link" onclick="showSection('trips',this)">
+        <span class="link-icon">🚌</span> Trips
+      </a>
+      <a class="admin-nav-link" onclick="showSection('routes',this)">
+        <span class="link-icon">🗺</span> Routes
+      </a>
+
+      <div class="admin-nav-section">Manage</div>
+      <a class="admin-nav-link" onclick="showSection('gallery',this)">
+        <span class="link-icon">📸</span> Gallery
+      </a>
+      <a class="admin-nav-link" onclick="showSection('messages',this)">
+        <span class="link-icon">✉️</span> Messages
+      </a>
+      <a class="admin-nav-link" onclick="showSection('users',this)">
+        <span class="link-icon">👥</span> Users
+      </a>
+    </nav>
+    <div class="admin-signout">
+      <a href="../index.html" class="admin-nav-link" style="color:rgba(255,255,255,0.4);font-size:0.78rem;">
+        <span class="link-icon">🏠</span> Back to Site
+      </a>
+      <button onclick="signOutAdmin()" class="admin-nav-link w-full" style="background:none;border:none;cursor:pointer;color:rgba(255,71,71,0.7);font-size:0.78rem;text-align:left;margin-top:4px;">
+        <span class="link-icon">🚪</span> Sign Out
+      </button>
+    </div>
+  </aside>
+
+  <!-- Main -->
+  <div class="admin-main">
+    <div class="admin-topbar">
+      <div class="admin-page-title" id="page-title">Dashboard Overview</div>
+      <div class="admin-user-info">
+        <div class="admin-avatar" id="admin-avatar">A</div>
+        <div>
+          <div style="font-weight:600;color:var(--clr-text-dark);" id="admin-name">Admin</div>
+          <div style="font-size:0.7rem;">Super Admin</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="admin-content">
+
+      <!-- ── Dashboard ── -->
+      <div class="admin-section active" id="s-dashboard">
+        <div class="stat-cards" id="stat-cards">
+          <div class="stat-card">
+            <div class="stat-icon red">🎫</div>
+            <div>
+              <div class="stat-num" id="stat-bookings">—</div>
+              <div class="stat-lbl">Total Bookings</div>
+              <div class="stat-change" id="stat-bookings-change">Loading…</div>
+            </div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon green">₹</div>
+            <div>
+              <div class="stat-num" id="stat-revenue">—</div>
+              <div class="stat-lbl">Total Revenue</div>
+              <div class="stat-change" id="stat-rev-change">Loading…</div>
+            </div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon orange">🚌</div>
+            <div>
+              <div class="stat-num" id="stat-trips">—</div>
+              <div class="stat-lbl">Active Trips Today</div>
+              <div class="stat-change">Scheduled for today</div>
+            </div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon purple">👥</div>
+            <div>
+              <div class="stat-num" id="stat-users">—</div>
+              <div class="stat-lbl">Registered Users</div>
+              <div class="stat-change">Total accounts</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Recent Bookings -->
+        <div class="data-card">
+          <div class="data-card-header">
+            <div class="data-card-title">Recent Bookings</div>
+            <button class="btn btn-outline btn-sm" onclick="showSection('bookings', document.querySelector('[onclick*=bookings]'))">View All →</button>
+          </div>
+          <div style="overflow-x:auto;">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>Booking Ref</th>
+                  <th>Passenger</th>
+                  <th>Route</th>
+                  <th>Bus Type</th>
+                  <th>Seats</th>
+                  <th>Amount</th>
+                  <th>Status</th>
+                </tr>
+              </thead>
+              <tbody id="recent-bookings-tbody">
+                <tr><td colspan="7" style="text-align:center;padding:32px;color:var(--clr-text-muted);">
+                  <div class="spinner" style="margin:0 auto;"></div>
+                </td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── Bookings ── -->
+      <div class="admin-section" id="s-bookings">
+        <div class="data-card">
+          <div class="data-card-header">
+            <div class="data-card-title">All Bookings</div>
+            <div style="display:flex;gap:var(--sp-sm);">
+              <select class="form-control" id="booking-status-filter" onchange="filterBookings()" style="width:140px;padding:6px 10px;font-size:0.8rem;">
+                <option value="">All Status</option>
+                <option value="confirmed">Confirmed</option>
+                <option value="cancelled">Cancelled</option>
+                <option value="pending">Pending</option>
+              </select>
+              <button class="btn btn-primary btn-sm" onclick="loadBookings()">🔄 Refresh</button>
+            </div>
+          </div>
+          <div style="overflow-x:auto;">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>Ref #</th>
+                  <th>Passenger</th>
+                  <th>Mobile</th>
+                  <th>Route</th>
+                  <th>Departure</th>
+                  <th>Bus Type</th>
+                  <th>Seats</th>
+                  <th>Amount</th>
+                  <th>Status</th>
+                  <th>Action</th>
+                </tr>
+              </thead>
+              <tbody id="bookings-tbody">
+                <tr><td colspan="10" style="text-align:center;padding:32px;color:var(--clr-text-muted);">Loading…</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── Gallery ── -->
+      <div class="admin-section" id="s-gallery">
+        <div class="data-card">
+          <div class="data-card-header">
+            <div class="data-card-title">Gallery Photos</div>
+            <div style="display:flex;gap:var(--sp-sm);">
+              <button class="btn btn-outline btn-sm" onclick="filterAdminGallery('pending')">Pending Approval</button>
+              <button class="btn btn-primary btn-sm" onclick="loadAdminGallery()">🔄 Refresh</button>
+            </div>
+          </div>
+          <div id="admin-gallery-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:var(--sp-md);padding:var(--sp-xl);">
+            <div style="text-align:center;padding:32px;color:var(--clr-text-muted);grid-column:1/-1;">Loading gallery…</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── Messages ── -->
+      <div class="admin-section" id="s-messages">
+        <div class="data-card">
+          <div class="data-card-header">
+            <div class="data-card-title">Contact Messages</div>
+            <button class="btn btn-primary btn-sm" onclick="loadMessages()">🔄 Refresh</button>
+          </div>
+          <div style="overflow-x:auto;">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>Name</th>
+                  <th>Mobile</th>
+                  <th>Subject</th>
+                  <th>Message</th>
+                  <th>Date</th>
+                  <th>Status</th>
+                </tr>
+              </thead>
+              <tbody id="messages-tbody">
+                <tr><td colspan="6" style="text-align:center;padding:32px;color:var(--clr-text-muted);">Loading…</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── Trips ── -->
+      <div class="admin-section" id="s-trips">
+        <div class="data-card">
+          <div class="data-card-header">
+            <div class="data-card-title">Scheduled Trips</div>
+            <button class="btn btn-primary btn-sm">+ Add Trip</button>
+          </div>
+          <div style="padding:var(--sp-xl);text-align:center;color:var(--clr-text-muted);">
+            <div style="font-size:2.5rem;margin-bottom:12px;">🚌</div>
+            <p>Trip management coming soon. Add trips through Firebase console for now.</p>
+            <a href="https://console.firebase.google.com" target="_blank" class="btn btn-primary btn-sm mt-md">Open Firebase Console</a>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── Routes ── -->
+      <div class="admin-section" id="s-routes">
+        <div class="data-card">
+          <div class="data-card-header">
+            <div class="data-card-title">Routes</div>
+            <button class="btn btn-primary btn-sm" onclick="loadRoutes()">🔄 Refresh</button>
+          </div>
+          <div style="overflow-x:auto;">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>Origin</th>
+                  <th>Destination</th>
+                  <th>Distance (km)</th>
+                  <th>Duration</th>
+                </tr>
+              </thead>
+              <tbody id="routes-tbody">
+                <tr><td colspan="4" style="text-align:center;padding:32px;color:var(--clr-text-muted);">Loading…</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── Users ── -->
+      <div class="admin-section" id="s-users">
+        <div class="data-card">
+          <div class="data-card-header">
+            <div class="data-card-title">Registered Users</div>
+            <button class="btn btn-primary btn-sm" onclick="loadUsers()">🔄 Refresh</button>
+          </div>
+          <div style="overflow-x:auto;">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>Name</th>
+                  <th>Email</th>
+                  <th>Mobile</th>
+                  <th>Role</th>
+                  <th>Joined</th>
+                </tr>
+              </thead>
+              <tbody id="users-tbody">
+                <tr><td colspan="5" style="text-align:center;padding:32px;color:var(--clr-text-muted);">Loading…</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+</div>
+
+<div id="toast-container"></div>
+<script type="module" src="../js/auth.js"></script>
+<script type="module" src="../js/admin.js"></script>
+<script>
+  window.showToast = function(msg, type='info') {
+    const icons = { success:'✅', error:'❌', info:'ℹ️' };
+    const t = document.createElement('div');
+    t.className = `toast ${type}`;
+    t.innerHTML = `<span class="toast-icon">${icons[type]||'ℹ️'}</span><span class="toast-msg">${msg}</span>`;
+    document.getElementById('toast-container').appendChild(t);
+    setTimeout(() => t.remove(), 4000);
+  };
+
+  const pageTitles = {
+    dashboard: 'Dashboard Overview',
+    bookings:  'All Bookings',
+    trips:     'Scheduled Trips',
+    routes:    'Routes',
+    gallery:   'Gallery Management',
+    messages:  'Contact Messages',
+    users:     'Registered Users',
+  };
+
+  window.showSection = function(name, el) {
+    document.querySelectorAll('.admin-section').forEach(s => s.classList.remove('active'));
+    document.querySelectorAll('.admin-nav-link').forEach(l => l.classList.remove('active'));
+    const section = document.getElementById(`s-${name}`);
+    if (section) section.classList.add('active');
+    if (el) el.classList.add('active');
+    document.getElementById('page-title').textContent = pageTitles[name] || name;
+
+    if (name === 'bookings') window.loadBookings?.();
+    if (name === 'messages') window.loadMessages?.();
+    if (name === 'gallery')  window.loadAdminGallery?.();
+    if (name === 'routes')   window.loadRoutes?.();
+    if (name === 'users')    window.loadUsers?.();
+  };
+</script>
+</body>
+</html>

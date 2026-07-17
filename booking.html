@@ -1,0 +1,653 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Book Bus Tickets — Flyggo Tamil Nadu</title>
+  <meta name="description" content="Search and book bus tickets on Tamil Nadu routes. Select your seat, pay online and get instant e-ticket.">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🚌</text></svg>">
+  <link rel="stylesheet" href="css/index.css">
+  <style>
+    body { background: var(--clr-bg); }
+    .booking-page { padding-top: var(--nav-height); min-height: 100vh; }
+
+    /* ── Sticky Search Bar (RedBus style) ── */
+    .sticky-search {
+      background: #fff;
+      border-bottom: 1px solid var(--clr-border);
+      box-shadow: var(--shadow-sm);
+      position: sticky;
+      top: var(--nav-height);
+      z-index: 100;
+      padding: var(--sp-md) 0;
+    }
+    .sticky-search-inner {
+      display: flex;
+      align-items: center;
+      gap: var(--sp-md);
+      flex-wrap: wrap;
+    }
+    .route-breadcrumb {
+      display: flex;
+      align-items: center;
+      gap: var(--sp-sm);
+      font-size: 0.95rem;
+      font-weight: 700;
+      color: var(--clr-text-dark);
+      flex: 0 0 auto;
+    }
+    .route-breadcrumb .arrow { color: var(--clr-primary); }
+    .bus-count {
+      font-size: 0.78rem;
+      color: var(--clr-text-muted);
+      font-weight: 400;
+    }
+    .search-compact {
+      display: flex;
+      align-items: center;
+      gap: var(--sp-sm);
+      background: var(--clr-surface);
+      border: 1px solid var(--clr-border);
+      border-radius: var(--radius-md);
+      padding: 8px 14px;
+      flex: 1;
+      max-width: 600px;
+    }
+    .search-compact select,
+    .search-compact input {
+      background: transparent;
+      border: none;
+      padding: 0;
+      font-size: 0.875rem;
+      color: var(--clr-text-dark);
+      flex: 1;
+      min-width: 0;
+    }
+    .search-compact .divider-v { width: 1px; height: 20px; background: var(--clr-border); flex-shrink: 0; }
+    .date-pill {
+      display: flex;
+      gap: var(--sp-sm);
+    }
+    .date-btn {
+      padding: 6px 14px;
+      border-radius: var(--radius-full);
+      font-size: 0.8rem;
+      font-weight: 600;
+      border: 1.5px solid var(--clr-border);
+      background: transparent;
+      color: var(--clr-text-secondary);
+      cursor: pointer;
+      transition: all var(--transition-fast);
+    }
+    .date-btn.active { border-color: var(--clr-primary); background: var(--clr-primary-bg); color: var(--clr-primary); }
+    .search-go-btn {
+      width: 38px; height: 38px;
+      background: var(--clr-primary);
+      border: none;
+      border-radius: var(--radius-md);
+      display: grid;
+      place-items: center;
+      color: #fff;
+      font-size: 1rem;
+      cursor: pointer;
+      transition: all var(--transition-fast);
+      flex-shrink: 0;
+    }
+    .search-go-btn:hover { background: var(--clr-primary-dark); }
+
+    /* ── Main Layout ── */
+    .results-layout {
+      display: grid;
+      grid-template-columns: 240px 1fr;
+      gap: var(--sp-lg);
+      padding: var(--sp-lg) 0 var(--sp-3xl);
+      align-items: start;
+    }
+    @media (max-width: 900px) { .results-layout { grid-template-columns: 1fr; } .filter-sidebar { display: none; } }
+
+    /* ── Filter Sidebar (RedBus-style pills) ── */
+    .filter-sidebar { position: sticky; top: calc(var(--nav-height) + 72px); }
+    .filter-panel {
+      background: #fff;
+      border: 1px solid var(--clr-border);
+      border-radius: var(--radius-lg);
+      overflow: hidden;
+    }
+    .filter-panel-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: var(--sp-md) var(--sp-lg);
+      border-bottom: 1px solid var(--clr-border);
+    }
+    .filter-panel-header h3 { font-size: 0.9rem; font-weight: 700; }
+    .filter-clear { font-size: 0.78rem; color: var(--clr-primary); cursor: pointer; font-weight: 600; background: none; border: none; }
+    .filter-section { padding: var(--sp-md) var(--sp-lg); border-bottom: 1px solid var(--clr-border); }
+    .filter-section:last-child { border-bottom: none; }
+    .filter-section-title { font-size: 0.78rem; font-weight: 700; color: var(--clr-text-muted); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: var(--sp-md); }
+    .filter-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      padding: 5px 12px;
+      border: 1.5px solid var(--clr-border);
+      border-radius: var(--radius-full);
+      font-size: 0.78rem;
+      font-weight: 500;
+      color: var(--clr-text-secondary);
+      cursor: pointer;
+      background: transparent;
+      transition: all var(--transition-fast);
+      margin-bottom: var(--sp-sm);
+      margin-right: var(--sp-xs);
+    }
+    .filter-pill.active, .filter-pill:hover {
+      border-color: var(--clr-primary);
+      background: var(--clr-primary-bg);
+      color: var(--clr-primary);
+    }
+    .filter-checkbox {
+      display: flex;
+      align-items: center;
+      gap: var(--sp-sm);
+      padding: 4px 0;
+      font-size: 0.82rem;
+      color: var(--clr-text-secondary);
+      cursor: pointer;
+    }
+    .filter-checkbox input { accent-color: var(--clr-primary); width: 15px; height: 15px; cursor: pointer; }
+    .filter-checkbox:hover { color: var(--clr-text-dark); }
+
+    /* ── Results Header ── */
+    .results-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: var(--sp-md);
+      flex-wrap: wrap;
+      gap: var(--sp-sm);
+    }
+    .results-count { font-size: 0.9rem; color: var(--clr-text-secondary); }
+    .results-count strong { color: var(--clr-text-dark); font-weight: 700; }
+    .sort-row { display: flex; align-items: center; gap: var(--sp-sm); }
+    .sort-lbl { font-size: 0.78rem; color: var(--clr-text-muted); font-weight: 600; }
+    .sort-btn {
+      padding: 5px 12px;
+      border: 1px solid var(--clr-border);
+      border-radius: var(--radius-full);
+      font-size: 0.78rem;
+      font-weight: 600;
+      background: transparent;
+      color: var(--clr-text-secondary);
+      cursor: pointer;
+      transition: all var(--transition-fast);
+    }
+    .sort-btn.active, .sort-btn:hover { border-color: var(--clr-primary); color: var(--clr-primary); background: var(--clr-primary-bg); }
+
+    /* ── Bus Result Card (RedBus-style) ── */
+    .bus-card {
+      background: #fff;
+      border: 1px solid var(--clr-border);
+      border-radius: var(--radius-lg);
+      margin-bottom: var(--sp-md);
+      overflow: hidden;
+      box-shadow: var(--shadow-xs);
+      transition: all var(--transition-base);
+    }
+    .bus-card:hover { box-shadow: var(--shadow-hover); border-color: var(--clr-primary-border); }
+
+    .bus-card-main {
+      display: grid;
+      grid-template-columns: 1fr 1fr auto auto;
+      gap: var(--sp-lg);
+      padding: var(--sp-lg) var(--sp-xl);
+      align-items: center;
+    }
+    @media (max-width: 768px) { .bus-card-main { grid-template-columns: 1fr 1fr; } }
+
+    .bus-operator { font-size: 0.9rem; font-weight: 700; color: var(--clr-text-dark); margin-bottom: 2px; }
+    .bus-type-badge {
+      font-size: 0.72rem;
+      color: var(--clr-text-muted);
+      display: flex;
+      align-items: center;
+      gap: 5px;
+    }
+
+    .bus-timing {
+      display: flex;
+      align-items: center;
+      gap: var(--sp-md);
+    }
+    .time-val { font-size: 1.25rem; font-weight: 800; color: var(--clr-text-dark); font-family: var(--font-heading); line-height: 1; }
+    .time-city { font-size: 0.72rem; color: var(--clr-text-muted); margin-top: 2px; }
+    .time-sep { display: flex; flex-direction: column; align-items: center; gap: 2px; flex: 1; }
+    .time-line { width: 100%; height: 1px; background: var(--clr-border); position: relative; }
+    .time-line::after { content: '→'; position: absolute; right: -6px; top: -9px; color: var(--clr-primary); font-size: 0.7rem; }
+    .time-dur { font-size: 0.7rem; color: var(--clr-text-muted); }
+
+    .bus-rating {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+    .rating-badge {
+      padding: 3px 8px;
+      background: var(--clr-green);
+      border-radius: 4px;
+      color: #fff;
+      font-size: 0.78rem;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      gap: 3px;
+    }
+    .rating-count { font-size: 0.7rem; color: var(--clr-text-muted); }
+
+    .bus-price-block { text-align: right; }
+    .bus-price-original { font-size: 0.75rem; color: var(--clr-text-muted); text-decoration: line-through; }
+    .bus-price-main { font-size: 1.3rem; font-weight: 800; color: var(--clr-text-dark); font-family: var(--font-heading); line-height: 1; }
+    .bus-price-label { font-size: 0.7rem; color: var(--clr-text-muted); margin-top: 2px; }
+    .bus-seats-left { font-size: 0.75rem; margin-top: 4px; }
+    .seats-low  { color: var(--clr-primary); font-weight: 600; }
+    .seats-ok   { color: var(--clr-text-muted); }
+
+    .view-seats-btn {
+      padding: 10px 20px;
+      background: var(--clr-primary);
+      color: #fff;
+      border: none;
+      border-radius: var(--radius-full);
+      font-size: 0.82rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all var(--transition-base);
+      white-space: nowrap;
+    }
+    .view-seats-btn:hover { background: var(--clr-primary-dark); transform: translateY(-1px); }
+
+    .bus-card-footer {
+      border-top: 1px solid var(--clr-border);
+      padding: var(--sp-sm) var(--sp-xl);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background: var(--clr-surface);
+      flex-wrap: wrap;
+      gap: var(--sp-sm);
+    }
+    .bus-amenity-list { display: flex; gap: var(--sp-md); flex-wrap: wrap; }
+    .bus-amenity { font-size: 0.72rem; color: var(--clr-text-muted); display: flex; align-items: center; gap: 3px; }
+    .bus-tags { display: flex; gap: var(--sp-sm); }
+    .bus-tag {
+      padding: 2px 8px;
+      border-radius: var(--radius-full);
+      font-size: 0.68rem;
+      font-weight: 600;
+    }
+    .tag-new       { background: #E3F2FD; color: #1565C0; }
+    .tag-cancellable { background: var(--clr-green-bg); color: var(--clr-green); }
+
+    /* ── Empty / Loading ── */
+    .empty-state { text-align: center; padding: 64px 24px; }
+    .empty-icon  { font-size: 3.5rem; display: block; margin-bottom: var(--sp-lg); }
+    .empty-title { font-size: 1.2rem; font-weight: 700; color: var(--clr-text-dark); margin-bottom: var(--sp-sm); }
+    .empty-sub   { font-size: 0.875rem; color: var(--clr-text-secondary); }
+
+    /* ── Seat Map Panel (RedBus-style full right-panel) ── */
+    .seat-panel-overlay {
+      position: fixed; inset: 0;
+      background: rgba(0,0,0,0.5);
+      z-index: 2000;
+      display: flex;
+      align-items: stretch;
+      justify-content: flex-end;
+      opacity: 0; pointer-events: none;
+      transition: opacity var(--transition-base);
+    }
+    .seat-panel-overlay.open { opacity: 1; pointer-events: all; }
+    .seat-panel {
+      background: #fff;
+      width: 100%;
+      max-width: 720px;
+      height: 100%;
+      overflow-y: auto;
+      transform: translateX(100%);
+      transition: transform var(--transition-slow);
+      display: flex;
+      flex-direction: column;
+    }
+    .seat-panel-overlay.open .seat-panel { transform: translateX(0); }
+
+    .seat-panel-header {
+      position: sticky; top: 0;
+      background: #fff;
+      border-bottom: 1px solid var(--clr-border);
+      padding: var(--sp-md) var(--sp-xl);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      z-index: 10;
+    }
+    .seat-panel-steps {
+      display: flex;
+      gap: 0;
+      border-bottom: 1px solid var(--clr-border);
+      padding: 0 var(--sp-xl);
+      background: #fff;
+    }
+    .step-tab {
+      padding: var(--sp-md) var(--sp-lg);
+      font-size: 0.82rem;
+      font-weight: 600;
+      color: var(--clr-text-muted);
+      border-bottom: 2px solid transparent;
+      cursor: pointer;
+    }
+    .step-tab.active { color: var(--clr-primary); border-bottom-color: var(--clr-primary); }
+
+    .seat-panel-body { flex: 1; display: grid; grid-template-columns: 1fr 280px; }
+    .seat-map-area { padding: var(--sp-xl); border-right: 1px solid var(--clr-border); }
+    .seat-info-area { padding: var(--sp-xl); }
+
+    /* Seat legend */
+    .seat-legend { display: flex; gap: var(--sp-lg); margin-bottom: var(--sp-lg); flex-wrap: wrap; }
+    .legend-item { display: flex; align-items: center; gap: 6px; font-size: 0.75rem; color: var(--clr-text-muted); }
+    .legend-box  { width: 18px; height: 18px; border-radius: 4px; }
+
+    /* Bus body */
+    .bus-diagram { background: var(--clr-surface); border: 1px solid var(--clr-border); border-radius: var(--radius-lg); padding: var(--sp-lg); }
+    .bus-driver-row { display: flex; align-items: center; justify-content: flex-end; padding-bottom: var(--sp-md); border-bottom: 1px dashed var(--clr-border); margin-bottom: var(--sp-md); gap: var(--sp-sm); font-size: 0.75rem; color: var(--clr-text-muted); }
+    .seat-row { display: flex; justify-content: center; gap: 6px; margin-bottom: 6px; align-items: center; }
+    .seat-aisle { width: 20px; }
+    .seat {
+      width: 38px; height: 50px;
+      border-radius: 6px 6px 4px 4px;
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      gap: 2px;
+      font-size: 0.65rem; font-weight: 700;
+      cursor: pointer;
+      transition: all 0.12s ease;
+      border: 1.5px solid;
+      user-select: none;
+      flex-shrink: 0;
+      position: relative;
+    }
+    .seat::before { content: ''; width: 60%; height: 3px; background: currentColor; border-radius: 2px; opacity: 0.3; position: absolute; top: 4px; }
+    .seat.available { background: #E8F5E9; border-color: var(--clr-green); color: var(--clr-green); }
+    .seat.available:hover { background: #C8E6C9; transform: scale(1.08); }
+    .seat.selected  { background: var(--clr-primary); border-color: var(--clr-primary-dark); color: #fff; transform: scale(1.05); }
+    .seat.sold      { background: #FAFAFA; border-color: #E0E0E0; color: #BDBDBD; cursor: not-allowed; }
+    .seat.ladies    { background: #FCE4EC; border-color: #F48FB1; color: #C2185B; }
+
+    /* Summary panel */
+    .booking-panel { background: var(--clr-surface); border: 1px solid var(--clr-border); border-radius: var(--radius-lg); padding: var(--sp-lg); margin-bottom: var(--sp-lg); }
+    .booking-panel-title { font-size: 0.82rem; font-weight: 700; color: var(--clr-text-dark); margin-bottom: var(--sp-md); }
+    .booking-row { display: flex; justify-content: space-between; font-size: 0.82rem; margin-bottom: var(--sp-sm); }
+    .booking-row .lbl { color: var(--clr-text-muted); }
+    .booking-row .val { font-weight: 600; color: var(--clr-text-dark); }
+    .booking-total { border-top: 1px solid var(--clr-border); padding-top: var(--sp-sm); margin-top: var(--sp-sm); }
+    .booking-total .val { color: var(--clr-primary); font-size: 1.1rem; }
+
+    @media (max-width: 640px) { .seat-panel-body { grid-template-columns: 1fr; } }
+  </style>
+</head>
+<body>
+<nav class="navbar" id="navbar">
+  <div class="container">
+    <a href="index.html" class="nav-logo"><div class="logo-box">🚌</div>Flyggo</a>
+    <div class="nav-links">
+      <a href="index.html">Home</a>
+      <a href="booking.html" class="active">Book Tickets</a>
+      <a href="gallery.html">Gallery</a>
+      <a href="contact.html">Contact</a>
+    </div>
+    <div class="nav-actions">
+      <button class="btn btn-outline btn-sm" id="nav-auth-btn" onclick="openAuthModal()">Sign In</button>
+    </div>
+  </div>
+</nav>
+
+<main class="booking-page">
+  <!-- Sticky Search Bar -->
+  <div class="sticky-search">
+    <div class="container">
+      <div class="sticky-search-inner">
+        <div>
+          <div class="route-breadcrumb">
+            <span id="breadcrumb-from">Chennai</span>
+            <span class="arrow">→</span>
+            <span id="breadcrumb-to">Coimbatore</span>
+          </div>
+          <div class="bus-count" id="bus-count-sub">Loading buses…</div>
+        </div>
+        <div class="search-compact">
+          <select id="s-from" style="appearance:none;">
+            <option>Chennai</option>
+            <option>Coimbatore</option>
+            <option>Madurai</option>
+            <option>Trichy</option>
+            <option>Salem</option>
+            <option>Tirunelveli</option>
+            <option>Vellore</option>
+            <option>Pondicherry</option>
+            <option>Erode</option>
+            <option>Tiruppur</option>
+          </select>
+          <div class="divider-v"></div>
+          <select id="s-to" style="appearance:none;">
+            <option>Coimbatore</option>
+            <option>Chennai</option>
+            <option>Madurai</option>
+            <option>Trichy</option>
+            <option>Salem</option>
+            <option>Tirunelveli</option>
+            <option>Vellore</option>
+            <option>Pondicherry</option>
+            <option>Erode</option>
+            <option>Tiruppur</option>
+          </select>
+          <div class="divider-v"></div>
+          <input type="date" id="s-date" style="width:130px;">
+        </div>
+        <div class="date-pill">
+          <button class="date-btn active" id="today-btn" onclick="setDay(0)">Today</button>
+          <button class="date-btn" id="tomorrow-btn" onclick="setDay(1)">Tomorrow</button>
+        </div>
+        <button class="search-go-btn" onclick="searchTrips()">🔍</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="container">
+    <div class="results-layout">
+      <!-- Filter Sidebar -->
+      <aside class="filter-sidebar">
+        <div class="filter-panel">
+          <div class="filter-panel-header">
+            <h3>Filter Buses</h3>
+            <button class="filter-clear" onclick="clearFilters()">Clear All</button>
+          </div>
+
+          <div class="filter-section">
+            <div class="filter-section-title">Bus Type</div>
+            <button class="filter-pill" onclick="togglePill(this,'type','AC Sleeper')">🛌 AC Sleeper</button>
+            <button class="filter-pill" onclick="togglePill(this,'type','AC Seater')">❄️ AC Seater</button>
+            <button class="filter-pill" onclick="togglePill(this,'type','Non-AC Seater')">🚌 Non-AC Seater</button>
+          </div>
+
+          <div class="filter-section">
+            <div class="filter-section-title">Departure Time</div>
+            <button class="filter-pill" onclick="togglePill(this,'time','morning')">🌅 Before 10 AM</button>
+            <button class="filter-pill" onclick="togglePill(this,'time','day')">☀️ 10 AM - 6 PM</button>
+            <button class="filter-pill" onclick="togglePill(this,'time','night')">🌙 After 6 PM</button>
+          </div>
+
+          <div class="filter-section">
+            <div class="filter-section-title">Amenities</div>
+            <label class="filter-checkbox">
+              <input type="checkbox" value="wifi" onchange="applyFilters()"> 📶 Wi-Fi
+            </label>
+            <label class="filter-checkbox">
+              <input type="checkbox" value="charging" onchange="applyFilters()"> 🔌 Charging Port
+            </label>
+            <label class="filter-checkbox">
+              <input type="checkbox" value="ac" onchange="applyFilters()"> ❄️ Air Conditioner
+            </label>
+          </div>
+
+          <div class="filter-section">
+            <div class="filter-section-title">Other</div>
+            <label class="filter-checkbox">
+              <input type="checkbox" value="cancellable" onchange="applyFilters()"> 🔄 Free Cancellation
+            </label>
+            <label class="filter-checkbox">
+              <input type="checkbox" value="new_bus" onchange="applyFilters()"> ✨ New Bus
+            </label>
+          </div>
+        </div>
+      </aside>
+
+      <!-- Results Area -->
+      <div>
+        <div class="results-header">
+          <div class="results-count" id="results-count"><strong>—</strong> buses found</div>
+          <div class="sort-row">
+            <span class="sort-lbl">Sort by:</span>
+            <button class="sort-btn active" id="sort-ratings" onclick="setSort('rating',this)">Ratings</button>
+            <button class="sort-btn" id="sort-time" onclick="setSort('time',this)">Departure Time</button>
+            <button class="sort-btn" id="sort-price" onclick="setSort('price',this)">Price</button>
+          </div>
+        </div>
+        <div id="trips-list">
+          <div class="skeleton" style="height:108px;border-radius:var(--radius-lg);margin-bottom:12px;"></div>
+          <div class="skeleton" style="height:108px;border-radius:var(--radius-lg);margin-bottom:12px;"></div>
+          <div class="skeleton" style="height:108px;border-radius:var(--radius-lg);margin-bottom:12px;"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</main>
+
+<!-- Seat Selection Panel -->
+<div class="seat-panel-overlay" id="seat-panel-overlay">
+  <div class="seat-panel">
+    <div class="seat-panel-header">
+      <div>
+        <div style="font-weight:700;font-size:0.95rem;" id="sp-route-title">Chennai → Coimbatore</div>
+        <div style="font-size:0.75rem;color:var(--clr-text-muted);" id="sp-operator-name">—</div>
+      </div>
+      <button onclick="closeSeatPanel()" style="background:none;border:none;font-size:1.3rem;cursor:pointer;color:var(--clr-text-muted);">✕</button>
+    </div>
+    <div class="seat-panel-steps">
+      <div class="step-tab active" id="step-seats">Select seats</div>
+      <div class="step-tab" id="step-pickup">Board/Drop point</div>
+      <div class="step-tab" id="step-passenger">Passenger Info</div>
+    </div>
+    <div class="seat-panel-body">
+      <!-- Seat Map -->
+      <div class="seat-map-area">
+        <div class="seat-legend">
+          <div class="legend-item">
+            <div class="legend-box" style="background:#E8F5E9;border:1.5px solid #43A047;"></div> Available
+          </div>
+          <div class="legend-item">
+            <div class="legend-box" style="background:#D84315;border:1.5px solid #BF360C;"></div> Selected
+          </div>
+          <div class="legend-item">
+            <div class="legend-box" style="background:#FAFAFA;border:1.5px solid #E0E0E0;"></div> Sold Out
+          </div>
+          <div class="legend-item">
+            <div class="legend-box" style="background:#FCE4EC;border:1.5px solid #F48FB1;"></div> Ladies
+          </div>
+        </div>
+        <div class="bus-diagram">
+          <div class="bus-driver-row">🚗 Driver <span style="font-size:1rem;">→</span></div>
+          <div id="seat-map-grid"></div>
+        </div>
+      </div>
+
+      <!-- Summary + Passenger form -->
+      <div class="seat-info-area">
+        <div class="booking-panel" id="booking-summary-panel">
+          <div class="booking-panel-title">Booking Summary</div>
+          <div class="booking-row"><span class="lbl">Selected Seats</span><span class="val" id="sp-seats">—</span></div>
+          <div class="booking-row"><span class="lbl">Fare per seat</span><span class="val" id="sp-fare">—</span></div>
+          <div class="booking-row booking-total"><span class="lbl" style="font-weight:700;">Total Amount</span><span class="val" id="sp-total">—</span></div>
+        </div>
+
+        <div id="passenger-step" style="display:none;">
+          <h4 style="font-size:0.9rem;font-weight:700;margin-bottom:var(--sp-md);color:var(--clr-text-dark);">👤 Passenger Details</h4>
+          <div class="form-group mb-md">
+            <label class="form-label">Full Name</label>
+            <input type="text" class="form-control" id="pax-name" placeholder="Enter full name">
+          </div>
+          <div class="form-group mb-md">
+            <label class="form-label">Mobile Number</label>
+            <input type="tel" class="form-control" id="pax-phone" placeholder="10-digit mobile number" maxlength="10">
+          </div>
+          <div class="form-group mb-lg">
+            <label class="form-label">Email (for e-ticket)</label>
+            <input type="email" class="form-control" id="pax-email" placeholder="you@gmail.com">
+          </div>
+        </div>
+
+        <button class="btn btn-primary w-full" id="sp-proceed-btn" onclick="proceedBooking()" disabled style="border-radius:var(--radius-full);">
+          Select seats to continue
+        </button>
+        <p style="font-size:0.72rem;color:var(--clr-text-muted);text-align:center;margin-top:var(--sp-sm);">
+          🔒 Secure payment · Instant e-ticket
+        </p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Auth Modal -->
+<div class="modal-overlay" id="auth-modal">
+  <div class="modal">
+    <div class="modal-header">
+      <h3 class="modal-title" id="auth-modal-title">Sign In to Book</h3>
+      <button class="modal-close" onclick="closeAuthModal()">✕</button>
+    </div>
+    <div class="form-group mb-md">
+      <label class="form-label">Email</label>
+      <input type="email" class="form-control" id="auth-email" placeholder="you@example.com" autocomplete="email">
+    </div>
+    <div class="form-group mb-lg">
+      <label class="form-label">Password</label>
+      <input type="password" class="form-control" id="auth-password" placeholder="••••••••">
+    </div>
+    <button class="btn btn-primary w-full btn-lg" id="auth-submit-btn" onclick="handleSignIn()" style="border-radius:var(--radius-full);">Sign In</button>
+    <p style="text-align:center;margin-top:var(--sp-md);font-size:0.82rem;color:var(--clr-text-muted);">
+      New user? <a href="#" style="color:var(--clr-primary);font-weight:600;" onclick="switchToSignUp()">Register</a>
+    </p>
+  </div>
+</div>
+
+<div id="toast-container"></div>
+
+<script type="module" src="js/auth.js"></script>
+<script type="module" src="js/booking.js"></script>
+<script>
+  window.showToast = function(msg, type='info') {
+    const icons = { success:'✅', error:'❌', info:'ℹ️' };
+    const t = document.createElement('div');
+    t.className = `toast ${type}`;
+    t.innerHTML = `<span class="toast-icon">${icons[type]||'ℹ️'}</span><span class="toast-msg">${msg}</span>`;
+    document.getElementById('toast-container').appendChild(t);
+    setTimeout(() => t.remove(), 4000);
+  };
+  function openAuthModal()  { document.getElementById('auth-modal').classList.add('open'); }
+  function closeAuthModal() { document.getElementById('auth-modal').classList.remove('open'); }
+  function switchToSignUp() {
+    document.getElementById('auth-modal-title').textContent = 'Create Account';
+    document.getElementById('auth-submit-btn').textContent  = 'Register';
+    document.getElementById('auth-submit-btn').onclick = handleSignUp;
+  }
+  document.getElementById('auth-modal').addEventListener('click', e => { if(e.target===e.currentTarget) closeAuthModal(); });
+  document.getElementById('seat-panel-overlay').addEventListener('click', e => { if(e.target===e.currentTarget) closeSeatPanel(); });
+</script>
+</body>
+</html>

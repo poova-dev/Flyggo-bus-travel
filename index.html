@@ -1,0 +1,1029 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Flyggo — Tamil Nadu's No.1 Online Bus Ticket Booking</title>
+  <meta name="description" content="Book bus tickets online for Tamil Nadu routes. Chennai to Coimbatore, Madurai, Trichy, Salem and 50+ routes. AC Sleeper, AC Seater, Non-AC available.">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🚌</text></svg>">
+  <link rel="stylesheet" href="css/index.css">
+  <style>
+    /* ── Hero Banner ── */
+    .hero {
+      background: linear-gradient(120deg, #1A1A2E 0%, #16213E 60%, #0F3460 100%);
+      padding: calc(var(--nav-height) + 48px) 0 0;
+      position: relative;
+      overflow: hidden;
+      min-height: 420px;
+    }
+    .hero::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.03'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+    }
+    .hero-inner {
+      display: grid;
+      grid-template-columns: 1fr 380px;
+      gap: var(--sp-3xl);
+      align-items: end;
+      position: relative;
+    }
+    .hero-content { padding-bottom: var(--sp-3xl); }
+    .hero-eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 5px 14px;
+      background: rgba(216,67,21,0.2);
+      border: 1px solid rgba(216,67,21,0.4);
+      border-radius: var(--radius-full);
+      color: #FF8A65;
+      font-size: 0.75rem;
+      font-weight: 600;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      margin-bottom: var(--sp-lg);
+      animation: slideInUp 0.5s ease both;
+    }
+    .hero-title {
+      font-size: clamp(2rem, 5vw, 3.2rem);
+      font-weight: 800;
+      color: #fff;
+      line-height: 1.15;
+      margin-bottom: var(--sp-lg);
+      animation: slideInUp 0.5s ease 0.1s both;
+    }
+    .hero-title span { color: #FF7043; }
+    .hero-subtitle {
+      font-size: 1rem;
+      color: rgba(255,255,255,0.65);
+      line-height: 1.7;
+      max-width: 460px;
+      margin-bottom: var(--sp-xl);
+      animation: slideInUp 0.5s ease 0.2s both;
+    }
+    .hero-stats {
+      display: flex;
+      gap: var(--sp-2xl);
+      animation: slideInUp 0.5s ease 0.3s both;
+    }
+    .hero-stat { display: flex; flex-direction: column; }
+    .hero-stat-num {
+      font-family: var(--font-heading);
+      font-size: 1.8rem;
+      font-weight: 800;
+      color: #FF7043;
+      line-height: 1;
+    }
+    .hero-stat-lbl {
+      font-size: 0.72rem;
+      color: rgba(255,255,255,0.5);
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      margin-top: 2px;
+    }
+    .hero-bus-img {
+      display: flex;
+      align-items: flex-end;
+      justify-content: center;
+      font-size: 7rem;
+      filter: drop-shadow(0 8px 24px rgba(0,0,0,0.4));
+      animation: float 5s ease-in-out infinite;
+      padding-bottom: 0;
+      line-height: 1;
+    }
+    @media (max-width: 900px) { .hero-inner { grid-template-columns: 1fr; } .hero-bus-img { display: none; } }
+
+    /* ── Search Card — floats below hero ── */
+    .search-wrapper {
+      margin-top: -24px;
+      position: relative;
+      z-index: 10;
+    }
+    .search-card {
+      background: #fff;
+      border-radius: var(--radius-xl);
+      box-shadow: 0 8px 40px rgba(0,0,0,0.15);
+      padding: var(--sp-xl) var(--sp-2xl);
+    }
+    .search-card-title {
+      font-size: 1rem;
+      font-weight: 700;
+      color: var(--clr-text-dark);
+      margin-bottom: var(--sp-lg);
+      display: flex;
+      align-items: center;
+      gap: var(--sp-sm);
+    }
+    .search-card-title span { color: var(--clr-primary); }
+    .search-grid {
+      display: grid;
+      grid-template-columns: 1fr 48px 1fr 1fr auto;
+      gap: var(--sp-sm);
+      align-items: end;
+    }
+    .search-field-wrap {
+      position: relative;
+    }
+    .search-icon {
+      position: absolute;
+      left: 12px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: var(--clr-text-muted);
+      font-size: 0.95rem;
+      pointer-events: none;
+      z-index: 1;
+    }
+    .search-field-wrap .form-control { padding-left: 38px; }
+    .search-swap-btn {
+      width: 42px; height: 42px;
+      background: var(--clr-primary-bg);
+      border: 1.5px solid var(--clr-primary-border);
+      border-radius: var(--radius-md);
+      display: grid;
+      place-items: center;
+      color: var(--clr-primary);
+      font-size: 1.1rem;
+      cursor: pointer;
+      transition: all var(--transition-base);
+      align-self: flex-end;
+      margin-bottom: 0;
+    }
+    .search-swap-btn:hover { background: var(--clr-primary); color: #fff; transform: rotate(180deg); }
+    @media (max-width: 1024px) { .search-grid { grid-template-columns: 1fr 42px 1fr; } .search-grid .search-date-wrap, .search-grid .search-btn-wrap { grid-column: span 3; } }
+    @media (max-width: 640px) { .search-grid { grid-template-columns: 1fr; } .search-swap-btn { display: none; } .search-grid .search-date-wrap, .search-grid .search-btn-wrap { grid-column: span 1; } }
+
+    /* Popular city chips */
+    .popular-cities {
+      margin-top: var(--sp-md);
+      display: flex;
+      align-items: center;
+      gap: var(--sp-sm);
+      flex-wrap: wrap;
+    }
+    .popular-lbl { font-size: 0.75rem; color: var(--clr-text-muted); font-weight: 500; }
+    .city-chip {
+      padding: 4px 12px;
+      background: var(--clr-surface);
+      border: 1px solid var(--clr-border);
+      border-radius: var(--radius-full);
+      font-size: 0.78rem;
+      font-weight: 500;
+      color: var(--clr-text-secondary);
+      cursor: pointer;
+      transition: all var(--transition-fast);
+    }
+    .city-chip:hover { background: var(--clr-primary-bg); border-color: var(--clr-primary); color: var(--clr-primary); }
+
+    /* ── Marquee Banner ── */
+    .marquee-band {
+      background: var(--clr-primary);
+      overflow: hidden;
+      padding: 10px 0;
+    }
+    .marquee-track {
+      display: flex;
+      gap: var(--sp-2xl);
+      animation: marqueeScroll 30s linear infinite;
+      width: max-content;
+    }
+    .marquee-item {
+      display: flex;
+      align-items: center;
+      gap: var(--sp-sm);
+      color: rgba(255,255,255,0.9);
+      font-size: 0.8rem;
+      font-weight: 600;
+      letter-spacing: 0.03em;
+      white-space: nowrap;
+    }
+    .marquee-sep { color: rgba(255,255,255,0.4); }
+    @keyframes marqueeScroll { from { transform: translateX(0); } to { transform: translateX(-50%); } }
+
+    /* ── Route Cards ── */
+    .route-card {
+      background: #fff;
+      border: 1px solid var(--clr-border);
+      border-radius: var(--radius-lg);
+      padding: var(--sp-lg);
+      display: flex;
+      flex-direction: column;
+      gap: var(--sp-sm);
+      cursor: pointer;
+      transition: all var(--transition-base);
+      text-decoration: none;
+      color: inherit;
+      box-shadow: var(--shadow-xs);
+    }
+    .route-card:hover {
+      box-shadow: var(--shadow-hover);
+      border-color: var(--clr-primary-border);
+      transform: translateY(-3px);
+    }
+    .route-card-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .route-cities {
+      display: flex;
+      align-items: center;
+      gap: var(--sp-sm);
+      font-weight: 700;
+      font-size: 0.95rem;
+      color: var(--clr-text-dark);
+    }
+    .route-arrow { color: var(--clr-primary); font-size: 0.85rem; }
+    .route-price {
+      font-family: var(--font-heading);
+      font-weight: 800;
+      font-size: 1.1rem;
+      color: var(--clr-primary);
+    }
+    .route-meta {
+      font-size: 0.78rem;
+      color: var(--clr-text-muted);
+      display: flex;
+      align-items: center;
+      gap: var(--sp-sm);
+    }
+    .route-meta-dot { width: 3px; height: 3px; border-radius: 50%; background: var(--clr-border-dark); }
+
+    /* ── Fleet Cards ── */
+    .fleet-card {
+      background: #fff;
+      border: 1.5px solid var(--clr-border);
+      border-radius: var(--radius-xl);
+      padding: var(--sp-xl) var(--sp-xl) var(--sp-lg);
+      transition: all var(--transition-base);
+      cursor: default;
+      box-shadow: var(--shadow-xs);
+      position: relative;
+      overflow: hidden;
+    }
+    .fleet-card::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 3px;
+      background: var(--fc-color, var(--clr-primary));
+    }
+    .fleet-card:hover { border-color: var(--clr-primary-border); box-shadow: var(--shadow-hover); transform: translateY(-4px); }
+    .fleet-card.executive { --fc-color: #7C3AED; }
+    .fleet-card.vip       { --fc-color: var(--clr-gold); }
+
+    .fleet-emoji { font-size: 2.4rem; margin-bottom: var(--sp-md); display: block; }
+    .fleet-name  { font-size: 1.15rem; font-weight: 700; color: var(--clr-text-dark); margin-bottom: 4px; }
+    .fleet-seats { font-size: 0.78rem; color: var(--clr-text-muted); margin-bottom: var(--sp-md); }
+    .fleet-amenity-list {
+      display: flex;
+      flex-wrap: wrap;
+      gap: var(--sp-sm);
+      margin-bottom: var(--sp-lg);
+    }
+    .fleet-amenity {
+      padding: 3px 9px;
+      background: var(--clr-surface);
+      border: 1px solid var(--clr-border);
+      border-radius: var(--radius-full);
+      font-size: 0.72rem;
+      color: var(--clr-text-secondary);
+      font-weight: 500;
+    }
+    .fleet-from {
+      font-size: 0.78rem;
+      color: var(--clr-text-muted);
+      margin-bottom: 2px;
+    }
+    .fleet-price {
+      font-family: var(--font-heading);
+      font-size: 1.4rem;
+      font-weight: 800;
+      color: var(--clr-primary);
+    }
+
+    /* ── Why Flyggo ── */
+    .why-card {
+      display: flex;
+      gap: var(--sp-lg);
+      align-items: flex-start;
+      padding: var(--sp-xl);
+      background: #fff;
+      border: 1px solid var(--clr-border);
+      border-radius: var(--radius-lg);
+      box-shadow: var(--shadow-xs);
+      transition: all var(--transition-base);
+    }
+    .why-card:hover { box-shadow: var(--shadow-hover); border-color: var(--clr-primary-border); transform: translateY(-3px); }
+    .why-icon {
+      width: 48px; height: 48px;
+      border-radius: var(--radius-md);
+      background: var(--clr-primary-bg);
+      display: grid; place-items: center;
+      font-size: 1.4rem;
+      flex-shrink: 0;
+    }
+    .why-title { font-size: 0.95rem; font-weight: 700; color: var(--clr-text-dark); margin-bottom: 4px; }
+    .why-desc  { font-size: 0.82rem; color: var(--clr-text-secondary); line-height: 1.6; }
+
+    /* ── Testimonials ── */
+    .testi-card {
+      background: #fff;
+      border: 1px solid var(--clr-border);
+      border-radius: var(--radius-xl);
+      padding: var(--sp-xl);
+      box-shadow: var(--shadow-xs);
+      transition: all var(--transition-base);
+    }
+    .testi-card:hover { box-shadow: var(--shadow-hover); border-color: var(--clr-primary-border); }
+    .testi-stars { color: var(--clr-gold); font-size: 0.85rem; letter-spacing: 2px; margin-bottom: var(--sp-md); }
+    .testi-text {
+      font-size: 0.875rem;
+      color: var(--clr-text-secondary);
+      line-height: 1.75;
+      margin-bottom: var(--sp-lg);
+      font-style: italic;
+    }
+    .testi-author { display: flex; align-items: center; gap: var(--sp-md); }
+    .testi-avatar {
+      width: 40px; height: 40px;
+      border-radius: 50%;
+      background: var(--clr-primary);
+      color: #fff;
+      display: grid; place-items: center;
+      font-weight: 700;
+      font-size: 1rem;
+      flex-shrink: 0;
+    }
+    .testi-name   { font-weight: 700; font-size: 0.875rem; color: var(--clr-text-dark); }
+    .testi-route  { font-size: 0.75rem; color: var(--clr-text-muted); margin-top: 1px; }
+
+    /* ── CTA ── */
+    .cta-strip {
+      background: var(--clr-primary);
+      border-radius: var(--radius-xl);
+      padding: var(--sp-3xl) var(--sp-2xl);
+      text-align: center;
+      position: relative;
+      overflow: hidden;
+    }
+    .cta-strip::before {
+      content: '🚌';
+      position: absolute;
+      font-size: 8rem;
+      right: 5%;
+      top: 50%;
+      transform: translateY(-50%);
+      opacity: 0.08;
+    }
+    .cta-strip h2 { color: #fff; font-size: clamp(1.6rem, 4vw, 2.4rem); font-weight: 800; margin-bottom: var(--sp-sm); }
+    .cta-strip p  { color: rgba(255,255,255,0.8); margin-bottom: var(--sp-xl); }
+    .cta-buttons  { display: flex; gap: var(--sp-md); justify-content: center; flex-wrap: wrap; }
+    .btn-white {
+      background: #fff;
+      color: var(--clr-primary);
+      font-weight: 700;
+      border-radius: var(--radius-full);
+      padding: 13px 28px;
+      transition: all var(--transition-base);
+    }
+    .btn-white:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(0,0,0,0.2); }
+    .btn-outline-white {
+      background: transparent;
+      color: #fff;
+      border: 2px solid rgba(255,255,255,0.5);
+      border-radius: var(--radius-full);
+      padding: 13px 28px;
+      font-weight: 600;
+      transition: all var(--transition-base);
+    }
+    .btn-outline-white:hover { border-color: #fff; background: rgba(255,255,255,0.1); transform: translateY(-2px); }
+
+    /* Section background alternation */
+    .bg-light { background: var(--clr-bg); }
+    .bg-white  { background: #fff; }
+  </style>
+</head>
+<body>
+
+<!-- Page Loader -->
+<div class="page-loader" id="page-loader">
+  <div class="nav-logo" style="font-size:1.8rem;">
+    <div class="logo-box" style="width:44px;height:44px;font-size:1.4rem;">🚌</div>
+    Flyggo
+  </div>
+  <div class="spinner"></div>
+</div>
+
+<!-- Navbar -->
+<nav class="navbar" id="navbar">
+  <div class="container">
+    <a href="index.html" class="nav-logo">
+      <div class="logo-box">🚌</div>
+      Flyggo
+    </a>
+    <div class="nav-links">
+      <a href="index.html" class="active">Home</a>
+      <a href="booking.html">Book Tickets</a>
+      <a href="gallery.html">Gallery</a>
+      <a href="contact.html">Contact</a>
+      <a href="admin/index.html" id="admin-nav-link" style="display:none;color:var(--clr-primary);font-weight:600;">⚙ Admin</a>
+    </div>
+    <div class="nav-actions">
+      <button class="btn btn-outline btn-sm" id="nav-auth-btn" onclick="openAuthModal()">Sign In</button>
+      <a href="booking.html" class="btn btn-primary btn-sm">Book Now</a>
+    </div>
+    <div class="nav-hamburger" id="hamburger">
+      <span></span><span></span><span></span>
+    </div>
+  </div>
+</nav>
+
+<!-- Hero Section -->
+<section class="hero">
+  <div class="container">
+    <div class="hero-inner">
+      <div class="hero-content">
+        <div class="hero-eyebrow">🏆 Tamil Nadu's No.1 Bus Booking Platform</div>
+        <h1 class="hero-title">
+          Book Bus Tickets<br>
+          <span>Online, Instantly.</span>
+        </h1>
+        <p class="hero-subtitle">
+          Fly across Tamil Nadu with Flyggo. AC Sleeper, AC Seater, Non-AC buses on 50+ routes.
+          Chennai, Coimbatore, Madurai, Trichy and beyond.
+        </p>
+        <div class="hero-stats">
+          <div class="hero-stat">
+            <span class="hero-stat-num">50+</span>
+            <span class="hero-stat-lbl">Routes</span>
+          </div>
+          <div class="hero-stat">
+            <span class="hero-stat-num">300+</span>
+            <span class="hero-stat-lbl">Buses Daily</span>
+          </div>
+          <div class="hero-stat">
+            <span class="hero-stat-num">2L+</span>
+            <span class="hero-stat-lbl">Passengers</span>
+          </div>
+        </div>
+      </div>
+      <div class="hero-bus-img">🚌</div>
+    </div>
+  </div>
+</section>
+
+<!-- Search Card -->
+<section style="background:var(--clr-bg);padding-bottom:0;">
+  <div class="container">
+    <div class="search-wrapper">
+      <div class="search-card">
+        <div class="search-card-title">🔍 Find <span>Buses</span></div>
+        <form id="search-form" onsubmit="handleSearch(event)">
+          <div class="search-grid">
+            <div class="form-group">
+              <label class="form-label">From</label>
+              <div class="search-field-wrap">
+                <span class="search-icon">📍</span>
+                <select class="form-control" id="origin" required>
+                  <option value="">Select City</option>
+                  <option>Chennai</option>
+                  <option>Coimbatore</option>
+                  <option>Madurai</option>
+                  <option>Trichy</option>
+                  <option>Salem</option>
+                  <option>Tirunelveli</option>
+                  <option>Vellore</option>
+                  <option>Pondicherry</option>
+                  <option>Erode</option>
+                  <option>Tiruppur</option>
+                </select>
+              </div>
+            </div>
+            <div style="display:flex;align-items:flex-end;padding-bottom:1px;">
+              <button type="button" class="search-swap-btn" onclick="swapCities()" title="Swap cities">⇄</button>
+            </div>
+            <div class="form-group">
+              <label class="form-label">To</label>
+              <div class="search-field-wrap">
+                <span class="search-icon">🏁</span>
+                <select class="form-control" id="destination" required>
+                  <option value="">Select City</option>
+                  <option>Chennai</option>
+                  <option>Coimbatore</option>
+                  <option>Madurai</option>
+                  <option>Trichy</option>
+                  <option>Salem</option>
+                  <option>Tirunelveli</option>
+                  <option>Vellore</option>
+                  <option>Pondicherry</option>
+                  <option>Erode</option>
+                  <option>Tiruppur</option>
+                </select>
+              </div>
+            </div>
+            <div class="form-group search-date-wrap">
+              <label class="form-label">Date of Journey</label>
+              <div class="search-field-wrap">
+                <span class="search-icon">📅</span>
+                <input type="date" class="form-control" id="travel-date" required>
+              </div>
+            </div>
+            <div class="search-btn-wrap" style="display:flex;align-items:flex-end;">
+              <button type="submit" class="btn btn-primary btn-lg w-full" id="search-btn" style="border-radius:var(--radius-full);font-size:1rem;">
+                🔍 Search Buses
+              </button>
+            </div>
+          </div>
+        </form>
+        <div class="popular-cities">
+          <span class="popular-lbl">Popular:</span>
+          <button class="city-chip" onclick="quickSearch('Chennai','Coimbatore')">Chennai → Coimbatore</button>
+          <button class="city-chip" onclick="quickSearch('Chennai','Madurai')">Chennai → Madurai</button>
+          <button class="city-chip" onclick="quickSearch('Chennai','Trichy')">Chennai → Trichy</button>
+          <button class="city-chip" onclick="quickSearch('Coimbatore','Salem')">Coimbatore → Salem</button>
+          <button class="city-chip" onclick="quickSearch('Madurai','Tirunelveli')">Madurai → Tirunelveli</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Marquee -->
+<div class="marquee-band" style="margin-top:var(--sp-2xl);">
+  <div class="marquee-track">
+    <div class="marquee-item">🚌 Chennai → Coimbatore <span class="marquee-sep">|</span></div>
+    <div class="marquee-item">🚌 Chennai → Madurai <span class="marquee-sep">|</span></div>
+    <div class="marquee-item">🚌 Trichy → Salem <span class="marquee-sep">|</span></div>
+    <div class="marquee-item">🚌 Chennai → Tirunelveli <span class="marquee-sep">|</span></div>
+    <div class="marquee-item">🚌 Coimbatore → Madurai <span class="marquee-sep">|</span></div>
+    <div class="marquee-item">🚌 Chennai → Vellore <span class="marquee-sep">|</span></div>
+    <div class="marquee-item">🚌 Erode → Chennai <span class="marquee-sep">|</span></div>
+    <div class="marquee-item">🚌 Pondicherry → Trichy <span class="marquee-sep">|</span></div>
+    <!-- Duplicate for seamless loop -->
+    <div class="marquee-item">🚌 Chennai → Coimbatore <span class="marquee-sep">|</span></div>
+    <div class="marquee-item">🚌 Chennai → Madurai <span class="marquee-sep">|</span></div>
+    <div class="marquee-item">🚌 Trichy → Salem <span class="marquee-sep">|</span></div>
+    <div class="marquee-item">🚌 Chennai → Tirunelveli <span class="marquee-sep">|</span></div>
+    <div class="marquee-item">🚌 Coimbatore → Madurai <span class="marquee-sep">|</span></div>
+    <div class="marquee-item">🚌 Chennai → Vellore <span class="marquee-sep">|</span></div>
+    <div class="marquee-item">🚌 Erode → Chennai <span class="marquee-sep">|</span></div>
+    <div class="marquee-item">🚌 Pondicherry → Trichy <span class="marquee-sep">|</span></div>
+  </div>
+</div>
+
+<!-- Popular Routes -->
+<section class="section bg-white">
+  <div class="container">
+    <div class="section-header reveal">
+      <div class="section-tag">🗺 Popular Routes</div>
+      <h2 class="section-title">Most Booked <span class="highlight">Tamil Nadu Routes</span></h2>
+      <p class="section-subtitle">Top intercity routes with multiple daily departures and best prices guaranteed.</p>
+    </div>
+    <div class="grid-4">
+      <a href="booking.html?from=Chennai&to=Coimbatore" class="route-card reveal">
+        <div class="route-card-header">
+          <div class="route-cities">Chennai <span class="route-arrow">→</span> Coimbatore</div>
+          <div class="route-price">₹450+</div>
+        </div>
+        <div class="route-meta">
+          <span>🕐 ~8 hrs</span>
+          <span class="route-meta-dot"></span>
+          <span>60+ buses daily</span>
+          <span class="route-meta-dot"></span>
+          <span class="badge badge-green">AC Available</span>
+        </div>
+      </a>
+      <a href="booking.html?from=Chennai&to=Madurai" class="route-card reveal" style="transition-delay:0.05s">
+        <div class="route-card-header">
+          <div class="route-cities">Chennai <span class="route-arrow">→</span> Madurai</div>
+          <div class="route-price">₹400+</div>
+        </div>
+        <div class="route-meta">
+          <span>🕐 ~9 hrs</span>
+          <span class="route-meta-dot"></span>
+          <span>80+ buses daily</span>
+          <span class="route-meta-dot"></span>
+          <span class="badge badge-green">Sleeper</span>
+        </div>
+      </a>
+      <a href="booking.html?from=Chennai&to=Trichy" class="route-card reveal" style="transition-delay:0.1s">
+        <div class="route-card-header">
+          <div class="route-cities">Chennai <span class="route-arrow">→</span> Trichy</div>
+          <div class="route-price">₹350+</div>
+        </div>
+        <div class="route-meta">
+          <span>🕐 ~7 hrs</span>
+          <span class="route-meta-dot"></span>
+          <span>55+ buses daily</span>
+          <span class="route-meta-dot"></span>
+          <span class="badge badge-orange">Non-AC</span>
+        </div>
+      </a>
+      <a href="booking.html?from=Coimbatore&to=Salem" class="route-card reveal" style="transition-delay:0.15s">
+        <div class="route-card-header">
+          <div class="route-cities">Coimbatore <span class="route-arrow">→</span> Salem</div>
+          <div class="route-price">₹220+</div>
+        </div>
+        <div class="route-meta">
+          <span>🕐 ~3 hrs</span>
+          <span class="route-meta-dot"></span>
+          <span>40+ buses daily</span>
+          <span class="route-meta-dot"></span>
+          <span class="badge badge-green">AC Available</span>
+        </div>
+      </a>
+      <a href="booking.html?from=Chennai&to=Tirunelveli" class="route-card reveal" style="transition-delay:0.2s">
+        <div class="route-card-header">
+          <div class="route-cities">Chennai <span class="route-arrow">→</span> Tirunelveli</div>
+          <div class="route-price">₹600+</div>
+        </div>
+        <div class="route-meta">
+          <span>🕐 ~10 hrs</span>
+          <span class="route-meta-dot"></span>
+          <span>35+ buses daily</span>
+          <span class="route-meta-dot"></span>
+          <span class="badge badge-green">Sleeper</span>
+        </div>
+      </a>
+      <a href="booking.html?from=Madurai&to=Coimbatore" class="route-card reveal" style="transition-delay:0.25s">
+        <div class="route-card-header">
+          <div class="route-cities">Madurai <span class="route-arrow">→</span> Coimbatore</div>
+          <div class="route-price">₹280+</div>
+        </div>
+        <div class="route-meta">
+          <span>🕐 ~4 hrs</span>
+          <span class="route-meta-dot"></span>
+          <span>45+ buses daily</span>
+          <span class="route-meta-dot"></span>
+          <span class="badge badge-orange">Non-AC</span>
+        </div>
+      </a>
+      <a href="booking.html?from=Chennai&to=Vellore" class="route-card reveal" style="transition-delay:0.3s">
+        <div class="route-card-header">
+          <div class="route-cities">Chennai <span class="route-arrow">→</span> Vellore</div>
+          <div class="route-price">₹180+</div>
+        </div>
+        <div class="route-meta">
+          <span>🕐 ~3 hrs</span>
+          <span class="route-meta-dot"></span>
+          <span>70+ buses daily</span>
+          <span class="route-meta-dot"></span>
+          <span class="badge badge-green">AC Available</span>
+        </div>
+      </a>
+      <a href="booking.html?from=Erode&to=Chennai" class="route-card reveal" style="transition-delay:0.35s">
+        <div class="route-card-header">
+          <div class="route-cities">Erode <span class="route-arrow">→</span> Chennai</div>
+          <div class="route-price">₹380+</div>
+        </div>
+        <div class="route-meta">
+          <span>🕐 ~6 hrs</span>
+          <span class="route-meta-dot"></span>
+          <span>30+ buses daily</span>
+          <span class="route-meta-dot"></span>
+          <span class="badge badge-green">Sleeper</span>
+        </div>
+      </a>
+    </div>
+  </div>
+</section>
+
+<!-- Fleet / Bus Types -->
+<section class="section bg-light">
+  <div class="container">
+    <div class="section-header reveal">
+      <div class="section-tag">🚌 Bus Types</div>
+      <h2 class="section-title">Choose Your <span class="highlight">Travel Experience</span></h2>
+      <p class="section-subtitle">From budget Non-AC to luxury AC Sleeper — we have the right bus for every journey.</p>
+    </div>
+    <div class="grid-3">
+      <!-- Non-AC Seater -->
+      <div class="fleet-card reveal">
+        <span class="fleet-emoji">🚌</span>
+        <div class="fleet-name">Non-AC Seater</div>
+        <div class="fleet-seats">2+3 layout · 50 seats</div>
+        <div class="fleet-amenity-list">
+          <span class="fleet-amenity">💧 Drinking Water</span>
+          <span class="fleet-amenity">🪑 Cushioned Seats</span>
+          <span class="fleet-amenity">🔒 Luggage Rack</span>
+        </div>
+        <div class="fleet-from">Starting from</div>
+        <div class="fleet-price">₹150 <small style="font-size:0.75rem;font-weight:400;color:var(--clr-text-muted);">/ seat</small></div>
+        <a href="booking.html?type=nonac-seater" class="btn btn-outline btn-sm mt-md">View Buses</a>
+      </div>
+      <!-- AC Seater -->
+      <div class="fleet-card executive reveal" style="transition-delay:0.1s">
+        <span class="fleet-emoji">❄️</span>
+        <div class="fleet-name">AC Seater</div>
+        <div class="fleet-seats">2+2 layout · 40 seats</div>
+        <div class="fleet-amenity-list">
+          <span class="fleet-amenity">❄️ Air Conditioner</span>
+          <span class="fleet-amenity">📶 Wi-Fi</span>
+          <span class="fleet-amenity">🔌 Charging Port</span>
+          <span class="fleet-amenity">💧 Water Bottle</span>
+        </div>
+        <div class="fleet-from">Starting from</div>
+        <div class="fleet-price" style="color:#7C3AED;">₹350 <small style="font-size:0.75rem;font-weight:400;color:var(--clr-text-muted);">/ seat</small></div>
+        <a href="booking.html?type=ac-seater" class="btn btn-sm mt-md" style="background:#7C3AED;color:#fff;border-radius:var(--radius-md);">View Buses</a>
+      </div>
+      <!-- AC Sleeper -->
+      <div class="fleet-card vip reveal" style="transition-delay:0.2s">
+        <span class="fleet-emoji">🛌</span>
+        <div class="fleet-name">AC Sleeper</div>
+        <div class="fleet-seats">2+1 layout · 30 berths</div>
+        <div class="fleet-amenity-list">
+          <span class="fleet-amenity">❄️ Air Conditioner</span>
+          <span class="fleet-amenity">🛌 Reclining Berth</span>
+          <span class="fleet-amenity">📶 Wi-Fi</span>
+          <span class="fleet-amenity">🔌 USB Charging</span>
+          <span class="fleet-amenity">🎭 Reading Light</span>
+        </div>
+        <div class="fleet-from">Starting from</div>
+        <div class="fleet-price" style="color:var(--clr-gold);">₹600 <small style="font-size:0.75rem;font-weight:400;color:var(--clr-text-muted);">/ berth</small></div>
+        <a href="booking.html?type=ac-sleeper" class="btn btn-sm mt-md" style="background:var(--clr-gold);color:#1A1A2E;border-radius:var(--radius-md);">View Buses</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Why Choose Flyggo -->
+<section class="section bg-white">
+  <div class="container">
+    <div class="section-header reveal">
+      <div class="section-tag">✅ Why Flyggo</div>
+      <h2 class="section-title">The <span class="highlight">Flyggo Difference</span></h2>
+      <p class="section-subtitle">Trusted by over 2 lakh Tamil Nadu travellers every month.</p>
+    </div>
+    <div class="grid-4">
+      <div class="why-card reveal">
+        <div class="why-icon">🛡</div>
+        <div>
+          <div class="why-title">100% Safe Travel</div>
+          <p class="why-desc">GPS-tracked buses, verified operators, and emergency helpline 24×7.</p>
+        </div>
+      </div>
+      <div class="why-card reveal" style="transition-delay:0.1s">
+        <div class="why-icon">🎫</div>
+        <div>
+          <div class="why-title">Instant E-Ticket</div>
+          <p class="why-desc">Get your ticket on SMS and email within seconds of booking. No printout needed.</p>
+        </div>
+      </div>
+      <div class="why-card reveal" style="transition-delay:0.2s">
+        <div class="why-icon">🔄</div>
+        <div>
+          <div class="why-title">Free Cancellation</div>
+          <p class="why-desc">Cancel up to 2 hours before departure and get a full refund — no questions asked.</p>
+        </div>
+      </div>
+      <div class="why-card reveal" style="transition-delay:0.3s">
+        <div class="why-icon">⏱</div>
+        <div>
+          <div class="why-title">On-Time Guaranteed</div>
+          <p class="why-desc">Real-time bus tracking and 97% on-time departure rate across all routes.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Testimonials -->
+<section class="section bg-light">
+  <div class="container">
+    <div class="section-header reveal">
+      <div class="section-tag">💬 Traveller Reviews</div>
+      <h2 class="section-title">What Our <span class="highlight">Passengers Say</span></h2>
+    </div>
+    <div class="grid-3">
+      <div class="testi-card reveal">
+        <div class="testi-stars">★★★★★</div>
+        <p class="testi-text">"Booked AC Sleeper for the Chennai–Coimbatore night journey. The berth was super comfortable, Wi-Fi worked great, and we reached 15 minutes early. Flyggo is the best!"</p>
+        <div class="testi-author">
+          <div class="testi-avatar">R</div>
+          <div>
+            <div class="testi-name">Ramesh Babu</div>
+            <div class="testi-route">Chennai → Coimbatore</div>
+          </div>
+        </div>
+      </div>
+      <div class="testi-card reveal" style="transition-delay:0.1s">
+        <div class="testi-stars">★★★★★</div>
+        <p class="testi-text">"Seat booking was so easy. Got the window seat I wanted on Chennai to Madurai. AC was perfect, the bus was brand new. Will definitely use Flyggo again."</p>
+        <div class="testi-author">
+          <div class="testi-avatar" style="background:#7C3AED;">S</div>
+          <div>
+            <div class="testi-name">Sudha Krishnan</div>
+            <div class="testi-route">Chennai → Madurai</div>
+          </div>
+        </div>
+      </div>
+      <div class="testi-card reveal" style="transition-delay:0.2s">
+        <div class="testi-stars">★★★★☆</div>
+        <p class="testi-text">"The mobile ticket worked perfectly. No need to print anything. Good service from Trichy to Salem. Affordable and reliable — much better than going to the bus stand."</p>
+        <div class="testi-author">
+          <div class="testi-avatar" style="background:var(--clr-gold);color:#1A1A2E;">K</div>
+          <div>
+            <div class="testi-name">Karthik Raja</div>
+            <div class="testi-route">Trichy → Salem</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- CTA Strip -->
+<section class="section bg-white">
+  <div class="container">
+    <div class="cta-strip reveal">
+      <h2>Ready for Your Next Journey?</h2>
+      <p>Book bus tickets in under 60 seconds. Best prices, best seats, guaranteed.</p>
+      <div class="cta-buttons">
+        <a href="booking.html" class="btn-white btn">🚌 Book Bus Now</a>
+        <a href="contact.html" class="btn-outline-white btn">📞 Contact Us</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Footer -->
+<footer class="site-footer">
+  <div class="container">
+    <div class="footer-grid">
+      <div>
+        <div class="nav-logo" style="color:#fff;">
+          <div class="logo-box">🚌</div>
+          Flyggo
+        </div>
+        <p class="footer-brand-text">Tamil Nadu's trusted online bus booking platform. Connecting cities across TN with safe, comfortable and affordable travel.</p>
+        <div class="footer-social">
+          <a href="#" title="WhatsApp">💬</a>
+          <a href="#" title="Instagram">📸</a>
+          <a href="#" title="Facebook">f</a>
+          <a href="#" title="Twitter/X">𝕏</a>
+        </div>
+      </div>
+      <div class="footer-col">
+        <h4>Quick Links</h4>
+        <ul>
+          <li><a href="index.html">Home</a></li>
+          <li><a href="booking.html">Book Tickets</a></li>
+          <li><a href="gallery.html">Gallery</a></li>
+          <li><a href="contact.html">Contact</a></li>
+          <li><a href="admin/index.html">Admin Panel</a></li>
+        </ul>
+      </div>
+      <div class="footer-col">
+        <h4>Bus Types</h4>
+        <ul>
+          <li><a href="booking.html?type=ac-sleeper">AC Sleeper (2+1)</a></li>
+          <li><a href="booking.html?type=ac-seater">AC Seater (2+2)</a></li>
+          <li><a href="booking.html?type=nonac-seater">Non-AC Seater</a></li>
+        </ul>
+      </div>
+      <div class="footer-col">
+        <h4>Contact</h4>
+        <ul>
+          <li><a href="tel:+914412345678">📞 044-1234-5678</a></li>
+          <li><a href="mailto:support@flyggo.in">✉ support@flyggo.in</a></li>
+          <li><a href="#">📍 Anna Salai, Chennai - 600002</a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <p>© 2026 Flyggo Bus Travel. All rights reserved.</p>
+      <p>Made with ❤️ in Tamil Nadu 🇮🇳</p>
+    </div>
+  </div>
+</footer>
+
+<!-- Auth Modal -->
+<div class="modal-overlay" id="auth-modal">
+  <div class="modal">
+    <div class="modal-header">
+      <h3 class="modal-title" id="auth-modal-title">Sign In to Flyggo</h3>
+      <button class="modal-close" onclick="closeAuthModal()">✕</button>
+    </div>
+    <div class="form-group mb-md">
+      <label class="form-label">Email Address</label>
+      <input type="email" class="form-control" id="auth-email" placeholder="you@example.com" autocomplete="email">
+    </div>
+    <div class="form-group mb-lg">
+      <label class="form-label">Password</label>
+      <input type="password" class="form-control" id="auth-password" placeholder="••••••••" autocomplete="current-password">
+    </div>
+    <button class="btn btn-primary w-full btn-lg" id="auth-submit-btn" onclick="handleSignIn()">Sign In</button>
+    <p style="text-align:center;margin-top:var(--sp-md);font-size:0.85rem;color:var(--clr-text-muted);">
+      New to Flyggo? <a href="#" style="color:var(--clr-primary);font-weight:600;" onclick="switchToSignUp()">Create Account</a>
+    </p>
+  </div>
+</div>
+
+<!-- Mobile Nav -->
+<div id="mobile-nav" style="display:none;position:fixed;top:var(--nav-height);left:0;right:0;background:#fff;border-bottom:1px solid var(--clr-border);z-index:999;padding:var(--sp-lg);box-shadow:var(--shadow-md);">
+  <div style="display:flex;flex-direction:column;gap:var(--sp-lg);">
+    <a href="index.html" style="font-weight:600;color:var(--clr-primary);">Home</a>
+    <a href="booking.html" style="color:var(--clr-text-secondary);">Book Tickets</a>
+    <a href="gallery.html" style="color:var(--clr-text-secondary);">Gallery</a>
+    <a href="contact.html" style="color:var(--clr-text-secondary);">Contact</a>
+  </div>
+</div>
+
+<div id="toast-container"></div>
+
+<script type="module" src="js/auth.js"></script>
+<script type="module">
+  import { db } from './js/firebase-config.js';
+  import { collection, getDocs } from 'https://www.gstatic.com/firebasejs/11.0.0/firebase-firestore.js';
+
+  // Page Loader — hides quickly, independent of Firebase
+  setTimeout(() => {
+    const loader = document.getElementById('page-loader');
+    if (loader) {
+      loader.classList.add('fade-out');
+      setTimeout(() => loader.style.display = 'none', 400);
+    }
+  }, 800);
+
+  // Hamburger
+  document.getElementById('hamburger').addEventListener('click', () => {
+    const mn = document.getElementById('mobile-nav');
+    mn.style.display = mn.style.display === 'none' ? 'block' : 'none';
+  });
+
+  // Set today's date
+  const di = document.getElementById('travel-date');
+  const today = new Date().toISOString().split('T')[0];
+  di.min = today;
+  di.value = today;
+
+  // Load cities from Firestore (overrides hardcoded options if data exists)
+  async function loadCities() {
+    try {
+      const snap = await getDocs(collection(db, 'counters'));
+      const cities = new Set();
+      snap.forEach(d => cities.add(d.data().city));
+      if (cities.size === 0) return;
+      ['origin','destination'].forEach(id => {
+        const sel = document.getElementById(id);
+        sel.innerHTML = '<option value="">Select City</option>';
+        [...cities].forEach(c => sel.innerHTML += `<option>${c}</option>`);
+      });
+    } catch(e) { /* use hardcoded fallback */ }
+  }
+  loadCities();
+
+  // Search
+  window.handleSearch = (e) => {
+    e.preventDefault();
+    const from = document.getElementById('origin').value;
+    const to   = document.getElementById('destination').value;
+    const date = document.getElementById('travel-date').value;
+    if (from === to) { showToast('Origin and destination cannot be the same', 'error'); return; }
+    window.location.href = `booking.html?from=${encodeURIComponent(from)}&to=${encodeURIComponent(to)}&date=${date}`;
+  };
+
+  window.swapCities = () => {
+    const o = document.getElementById('origin');
+    const d = document.getElementById('destination');
+    [o.value, d.value] = [d.value, o.value];
+  };
+
+  window.quickSearch = (from, to) => {
+    document.getElementById('origin').value = from;
+    document.getElementById('destination').value = to;
+    document.getElementById('search-btn').click();
+  };
+
+  // Reveal on scroll
+  const obs = new IntersectionObserver(entries => entries.forEach(e => {
+    if (e.isIntersecting) e.target.classList.add('visible');
+  }), { threshold: 0.08 });
+  document.querySelectorAll('.reveal').forEach(el => obs.observe(el));
+</script>
+
+<script>
+  window.showToast = function(msg, type='info') {
+    const icons = { success:'✅', error:'❌', info:'ℹ️' };
+    const t = document.createElement('div');
+    t.className = `toast ${type}`;
+    t.innerHTML = `<span class="toast-icon">${icons[type]||'ℹ️'}</span><span class="toast-msg">${msg}</span>`;
+    document.getElementById('toast-container').appendChild(t);
+    setTimeout(() => t.remove(), 4000);
+  };
+  function openAuthModal()  { document.getElementById('auth-modal').classList.add('open'); }
+  function closeAuthModal() { document.getElementById('auth-modal').classList.remove('open'); }
+  function switchToSignUp() {
+    document.getElementById('auth-modal-title').textContent = 'Create Account';
+    document.getElementById('auth-submit-btn').textContent  = 'Create Account';
+    document.getElementById('auth-submit-btn').onclick = handleSignUp;
+  }
+  document.getElementById('auth-modal').addEventListener('click', function(e) {
+    if (e.target === this) closeAuthModal();
+  });
+</script>
+</body>
+</html>

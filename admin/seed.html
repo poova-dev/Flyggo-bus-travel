@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Database Seeding Utility — Flyggo Admin</title>
+  <link rel="stylesheet" href="../css/index.css">
+  <style>
+    body { background: var(--clr-bg); padding: var(--sp-3xl) 0; }
+    .seed-card {
+      background: #fff;
+      border: 1px solid var(--clr-border);
+      border-radius: var(--radius-xl);
+      padding: var(--sp-2xl);
+      max-width: 600px;
+      margin: 0 auto;
+      box-shadow: var(--shadow-md);
+    }
+    .seed-title { font-size: 1.4rem; font-weight: 800; color: var(--clr-text-dark); margin-bottom: var(--sp-sm); }
+    .seed-desc { font-size: 0.875rem; color: var(--clr-text-secondary); margin-bottom: var(--sp-xl); line-height: 1.6; }
+    .status-list { display: flex; flex-direction: column; gap: var(--sp-sm); margin-bottom: var(--sp-xl); }
+    .status-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: var(--sp-sm) var(--sp-md);
+      background: var(--clr-surface);
+      border: 1px solid var(--clr-border);
+      border-radius: var(--radius-md);
+      font-size: 0.82rem;
+      font-weight: 500;
+    }
+    .status-badge {
+      font-size: 0.72rem;
+      font-weight: 700;
+      padding: 2px 8px;
+      border-radius: var(--radius-full);
+      text-transform: uppercase;
+    }
+    .badge-pending { background: var(--clr-border); color: var(--clr-text-secondary); }
+    .badge-running { background: #E3F2FD; color: #1565C0; }
+    .badge-success { background: var(--clr-green-bg); color: var(--clr-green); }
+    .badge-error   { background: var(--clr-primary-bg); color: var(--clr-primary); }
+
+    .instructions-box {
+      background: #FFF9C4;
+      border: 1px solid #FBC02D;
+      border-radius: var(--radius-md);
+      padding: var(--sp-md);
+      font-size: 0.78rem;
+      color: #F57F17;
+      line-height: 1.5;
+      margin-bottom: var(--sp-lg);
+    }
+  </style>
+</head>
+<body>
+<div class="container">
+  <div class="seed-card">
+    <div class="seed-title">📊 Flyggo Database Seeding Utility</div>
+    <p class="seed-desc">
+      Use this tool to populate your Cloud Firestore database with the foundational Tamil Nadu master configuration data (cities, routes, pricing, fleet types, and sample scheduled trips).
+    </p>
+
+    <div class="instructions-box">
+      <strong>⚠️ IMPORTANT FIRESTORE RULE STEP:</strong><br>
+      Since you haven't created an admin user yet, write operations might be blocked by security rules. Before clicking "Seed Data", please temporarily set your Firestore Rules in the Firebase console to:<br>
+      <code style="display:block;margin-top:4px;background:rgba(255,255,255,0.7);padding:4px;border-radius:4px;font-family:monospace;">allow read, write: if true;</code>
+      Change it back to original rules once the seeding finishes!
+    </div>
+
+    <div class="status-list">
+      <div class="status-item" id="item-counters">
+        <span>📍 Counters (Tamil Nadu Cities & Terminals)</span>
+        <span class="status-badge badge-pending" id="badge-counters">Pending</span>
+      </div>
+      <div class="status-item" id="item-fleets">
+        <span>🚌 Fleet Types (AC Sleeper, AC Seater, Non-AC Seater)</span>
+        <span class="status-badge badge-pending" id="badge-fleets">Pending</span>
+      </div>
+      <div class="status-item" id="item-routes">
+        <span>🗺 Routes (Chennai to Coimbatore, Madurai, etc.)</span>
+        <span class="status-badge badge-pending" id="badge-routes">Pending</span>
+      </div>
+      <div class="status-item" id="item-pricing">
+        <span>💵 Pricing configurations</span>
+        <span class="status-badge badge-pending" id="badge-pricing">Pending</span>
+      </div>
+      <div class="status-item" id="item-vehicles">
+        <span>🚍 Fleet Vehicles</span>
+        <span class="status-badge badge-pending" id="badge-vehicles">Pending</span>
+      </div>
+      <div class="status-item" id="item-schedules">
+        <span>⏱ Daily Schedules</span>
+        <span class="status-badge badge-pending" id="badge-schedules">Pending</span>
+      </div>
+      <div class="status-item" id="item-trips">
+        <span>🗓 Active Trip instances (Today/Tomorrow)</span>
+        <span class="status-badge badge-pending" id="badge-trips">Pending</span>
+      </div>
+    </div>
+
+    <div style="display:flex;gap:var(--sp-md);">
+      <button class="btn btn-primary w-full btn-lg" id="btn-seed" onclick="runSeeder()" style="border-radius:var(--radius-full);">
+        🚀 Seed Database
+      </button>
+      <a href="../index.html" class="btn btn-outline btn-lg" style="border-radius:var(--radius-full);width:200px;text-align:center;">
+        Cancel
+      </a>
+    </div>
+  </div>
+</div>
+
+<div id="toast-container"></div>
+
+<script type="module">
+  import { db } from '../js/firebase-config.js';
+  import {
+    collection, doc, setDoc, addDoc, getDocs
+  } from 'https://www.gstatic.com/firebasejs/11.0.0/firebase-firestore.js';
+
+  window.showToast = function(msg, type='info') {
+    const icons = { success:'✅', error:'❌', info:'ℹ️' };
+    const t = document.createElement('div');
+    t.className = `toast ${type}`;
+    t.innerHTML = `<span class="toast-icon">${icons[type]||'ℹ️'}</span><span class="toast-msg">${msg}</span>`;
+    document.getElementById('toast-container').appendChild(t);
+    setTimeout(() => t.remove(), 4000);
+  };
+
+  const CITIES = [
+    { city: 'Chennai', name: 'Koyambedu CMBT Terminal', type: 'both' },
+    { city: 'Coimbatore', name: 'Gandhipuram Central Bus Stand', type: 'both' },
+    { city: 'Madurai', name: 'Mattuthavani Integrated Bus Terminus', type: 'both' },
+    { city: 'Trichy', name: 'Central Bus Stand', type: 'both' },
+    { city: 'Salem', name: 'New Bus Stand', type: 'both' },
+    { city: 'Tirunelveli', name: 'Vellore New Bus Stand', type: 'both' },
+    { city: 'Vellore', name: 'New Bus Stand', type: 'both' },
+    { city: 'Pondicherry', name: 'Puducherry New Bus Stand', type: 'both' },
+    { city: 'Erode', name: 'Erode Central Bus Terminus', type: 'both' },
+    { city: 'Tiruppur', name: 'New Bus Stand', type: 'both' }
+  ];
+
+  const FLEET_TYPES = [
+    { id: 'ft-nonac-seater', name: 'Non-AC Seater', seat_layout: '2+3', total_seats: 50, amenities: ['💧 Water', '💺 Seater', '🔒 Luggage Rack'] },
+    { id: 'ft-ac-seater', name: 'AC Seater', seat_layout: '2+2', total_seats: 40, amenities: ['❄️ AC', '📶 Wi-Fi', '🔌 USB Charging', '💧 Water'] },
+    { id: 'ft-ac-sleeper', name: 'AC Sleeper', seat_layout: '2+1', total_seats: 30, amenities: ['❄️ AC', '🛌 Sleeper Berth', '📶 Wi-Fi', '🔌 USB Charging', '🎭 Reading Light'] }
+  ];
+
+  const ROUTES = [
+    { id: 'r-chn-cbe', origin: 'Chennai', destination: 'Coimbatore', distance_km: 510, duration_mins: 570 },
+    { id: 'r-chn-mdu', origin: 'Chennai', destination: 'Madurai', distance_km: 460, duration_mins: 540 },
+    { id: 'r-chn-try', origin: 'Chennai', destination: 'Trichy', distance_km: 330, duration_mins: 390 },
+    { id: 'r-cbe-slm', origin: 'Coimbatore', destination: 'Salem', distance_km: 170, duration_mins: 180 },
+    { id: 'r-chn-tvl', origin: 'Chennai', destination: 'Tirunelveli', distance_km: 620, duration_mins: 600 },
+    { id: 'r-mdu-cbe', origin: 'Madurai', destination: 'Coimbatore', distance_km: 215, duration_mins: 240 }
+  ];
+
+  const VEHICLES = [
+    { id: 'v-01', operator_name: 'PARVEEN TRAVELS', reg_number: 'TN-07-BY-1234', fleet_type_id: 'ft-ac-sleeper' },
+    { id: 'v-02', operator_name: 'THAMARAI BUS', reg_number: 'TN-37-CZ-5678', fleet_type_id: 'ft-ac-sleeper' },
+    { id: 'v-03', operator_name: 'SRM TRANSPORTS', reg_number: 'TN-01-AX-9999', fleet_type_id: 'ft-ac-seater' },
+    { id: 'v-04', operator_name: 'VRL TRAVELS', reg_number: 'KA-25-F-4321', fleet_type_id: 'ft-nonac-seater' },
+    { id: 'v-05', operator_name: 'KPN TRAVELS', reg_number: 'TN-59-D-7777', fleet_type_id: 'ft-ac-sleeper' }
+  ];
+
+  const PRICING = [
+    { route_id: 'r-chn-cbe', fleet_type_id: 'ft-ac-sleeper', price: 950 },
+    { route_id: 'r-chn-cbe', fleet_type_id: 'ft-ac-seater', price: 550 },
+    { route_id: 'r-chn-cbe', fleet_type_id: 'ft-nonac-seater', price: 350 },
+    { route_id: 'r-chn-mdu', fleet_type_id: 'ft-ac-sleeper', price: 850 },
+    { route_id: 'r-chn-mdu', fleet_type_id: 'ft-ac-seater', price: 480 },
+    { route_id: 'r-chn-try', fleet_type_id: 'ft-ac-sleeper', price: 700 },
+    { route_id: 'r-cbe-slm', fleet_type_id: 'ft-ac-seater', price: 250 }
+  ];
+
+  const SCHEDULES = [
+    { id: 'sc-01', departure_time: '21:00', arrival_time: '06:30' },
+    { id: 'sc-02', departure_time: '22:00', arrival_time: '07:30' },
+    { id: 'sc-03', departure_time: '06:00', arrival_time: '13:30' },
+    { id: 'sc-04', departure_time: '07:00', arrival_time: '15:00' },
+    { id: 'sc-05', departure_time: '20:00', arrival_time: '05:30' }
+  ];
+
+  // Trips connect routes, vehicles, schedules
+  const TRIPS = [
+    { route_id: 'r-chn-cbe', vehicle_id: 'v-01', schedule_id: 'sc-01', available_seats: 22, booked_seats: ['1A','1B','2A','3B','4C','5A','6B','7C'] },
+    { route_id: 'r-chn-cbe', vehicle_id: 'v-02', schedule_id: 'sc-02', available_seats: 10, booked_seats: ['1A','2A','2B','3A','3B','3C','4A','4B','5A','5B','6A','7A','7C','8B','9A','9B','9C','10A','10B','11A'] },
+    { route_id: 'r-chn-cbe', vehicle_id: 'v-03', schedule_id: 'sc-03', available_seats: 35, booked_seats: ['1A','1B','2C','2D','3A'] },
+    { route_id: 'r-chn-cbe', vehicle_id: 'v-04', schedule_id: 'sc-04', available_seats: 52, booked_seats: ['1A','2B'] },
+    { route_id: 'r-chn-cbe', vehicle_id: 'v-05', schedule_id: 'sc-05', available_seats: 24, booked_seats: ['1A','2B','3C','4A','5B','6C'] }
+  ];
+
+  window.runSeeder = async () => {
+    const btn = document.getElementById('btn-seed');
+    btn.disabled = true;
+    btn.textContent = '⏳ Seeding...';
+
+    try {
+      // 1. Counters
+      updateBadge('counters', 'running');
+      for (const item of CITIES) {
+        await addDoc(collection(db, 'counters'), item);
+      }
+      updateBadge('counters', 'success');
+
+      // 2. Fleet Types
+      updateBadge('fleets', 'running');
+      for (const item of FLEET_TYPES) {
+        await setDoc(doc(db, 'fleet_types', item.id), {
+          name: item.name,
+          seat_layout: item.seat_layout,
+          total_seats: item.total_seats,
+          amenities: item.amenities
+        });
+      }
+      updateBadge('fleets', 'success');
+
+      // 3. Routes
+      updateBadge('routes', 'running');
+      for (const item of ROUTES) {
+        await setDoc(doc(db, 'routes', item.id), {
+          origin: item.origin,
+          destination: item.destination,
+          distance_km: item.distance_km,
+          duration_mins: item.duration_mins
+        });
+      }
+      updateBadge('routes', 'success');
+
+      // 4. Pricing
+      updateBadge('pricing', 'running');
+      for (const item of PRICING) {
+        await addDoc(collection(db, 'pricing'), item);
+      }
+      updateBadge('pricing', 'success');
+
+      // 5. Vehicles
+      updateBadge('vehicles', 'running');
+      for (const item of VEHICLES) {
+        await setDoc(doc(db, 'vehicles', item.id), {
+          operator_name: item.operator_name,
+          reg_number: item.reg_number,
+          fleet_type_id: item.fleet_type_id
+        });
+      }
+      updateBadge('vehicles', 'success');
+
+      // 6. Schedules
+      updateBadge('schedules', 'running');
+      for (const item of SCHEDULES) {
+        await setDoc(doc(db, 'schedules', item.id), {
+          departure_time: item.departure_time,
+          arrival_time: item.arrival_time
+        });
+      }
+      updateBadge('schedules', 'success');
+
+      // 7. Trips
+      updateBadge('trips', 'running');
+      const todayDate = new Date().toISOString().split('T')[0];
+      for (const item of TRIPS) {
+        await addDoc(collection(db, 'trips'), {
+          route_id: item.route_id,
+          vehicle_id: item.vehicle_id,
+          schedule_id: item.schedule_id,
+          available_seats: item.available_seats,
+          booked_seats: item.booked_seats,
+          date: todayDate
+        });
+      }
+      updateBadge('trips', 'success');
+
+      showToast('🎉 Database Seeded Successfully!', 'success');
+      btn.textContent = '✅ Seeding Complete';
+    } catch(e) {
+      showToast('❌ Seeding failed: ' + e.message, 'error');
+      btn.textContent = '❌ Seeding Failed';
+      btn.disabled = false;
+    }
+  };
+
+  function updateBadge(id, state) {
+    const el = document.getElementById(`badge-${id}`);
+    if (!el) return;
+    el.className = `status-badge badge-${state}`;
+    el.textContent = state;
+  }
+</script>
+</body>
+</html>

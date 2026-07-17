@@ -1,0 +1,94 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Helper functions
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    function isAdmin() {
+      return isAuthenticated() &&
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
+    }
+
+    function isOwner(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
+    }
+
+    // PUBLIC READ - master data collections
+    match /counters/{doc} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
+    match /amenities/{doc} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
+    match /fleet_types/{doc} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
+    match /vehicles/{doc} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
+    match /routes/{doc} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
+    match /schedules/{doc} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
+    match /pricing/{doc} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
+    match /trips/{doc} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
+    // Gallery - public read, authenticated write
+    match /gallery/{doc} {
+      allow read: if true;
+      allow create: if isAuthenticated() &&
+        request.resource.data.uploaded_by == request.auth.uid;
+      allow delete: if isAdmin();
+    }
+
+    // Bookings - users can create their own, admins can read/update all
+    match /bookings/{doc} {
+      allow create: if isAuthenticated() &&
+        request.resource.data.user_id == request.auth.uid;
+      allow read: if isAdmin() ||
+        (isAuthenticated() && resource.data.user_id == request.auth.uid);
+      allow update: if isAdmin();
+      allow delete: if isAdmin();
+    }
+
+    // Contact submissions - anyone can create, only admins read
+    match /contact_submissions/{doc} {
+      allow create: if true;
+      allow read: if isAdmin();
+      allow delete: if isAdmin();
+    }
+
+    // Users - can read/update own profile, admin reads all
+    match /users/{userId} {
+      allow read: if isOwner(userId) || isAdmin();
+      allow create: if isAuthenticated() && request.auth.uid == userId;
+      allow update: if isOwner(userId) ||
+        (isAdmin() && request.resource.data.diff(resource.data).affectedKeys()
+          .hasOnly(['role', 'status']));
+    }
+  }
+}
