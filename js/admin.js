@@ -4,7 +4,7 @@
 import { db, auth } from '../js/firebase-config.js';
 import {
   collection, getDocs, doc, updateDoc, deleteDoc,
-  query, orderBy, limit, where, serverTimestamp
+  query, orderBy, limit, where, serverTimestamp, addDoc, setDoc
 } from 'https://www.gstatic.com/firebasejs/11.0.0/firebase-firestore.js';
 import { onAuthStateChanged, signOut } from 'https://www.gstatic.com/firebasejs/11.0.0/firebase-auth.js';
 
@@ -305,5 +305,238 @@ window.loadUsers = async function() {
     `).join('');
   } catch(e) {
     tbody.innerHTML = `<tr><td colspan="5" style="text-align:center;padding:24px;color:var(--clr-text-muted);">Error: ${e.message}</td></tr>`;
+  }
+};
+
+// ── Trips CRUD System ──
+let loadedRoutes = {};
+let loadedVehicles = {};
+let loadedSchedules = {};
+let allScheduledTrips = [];
+
+window.loadTrips = async function() {
+  const tbody = document.getElementById('trips-tbody');
+  tbody.innerHTML = `<tr><td colspan="7" style="text-align:center;padding:32px;"><div class="spinner" style="margin:0 auto;"></div></td></tr>`;
+  try {
+    const [routesSnap, vehiclesSnap, schedulesSnap, tripsSnap] = await Promise.all([
+      getDocs(collection(db, 'routes')),
+      getDocs(collection(db, 'vehicles')),
+      getDocs(collection(db, 'schedules')),
+      getDocs(collection(db, 'trips'))
+    ]);
+
+    loadedRoutes = {};
+    routesSnap.forEach(d => loadedRoutes[d.id] = { id:d.id, ...d.data() });
+
+    loadedVehicles = {};
+    vehiclesSnap.forEach(d => loadedVehicles[d.id] = { id:d.id, ...d.data() });
+
+    loadedSchedules = {};
+    schedulesSnap.forEach(d => loadedSchedules[d.id] = { id:d.id, ...d.data() });
+
+    allScheduledTrips = [];
+    tripsSnap.forEach(d => allScheduledTrips.push({ id:d.id, ...d.data() }));
+
+    if (allScheduledTrips.length === 0) {
+      tbody.innerHTML = `<tr><td colspan="7" style="text-align:center;padding:32px;color:var(--clr-text-muted);">No scheduled trips found. Click "+ Add Trip" to create one.</td></tr>`;
+      return;
+    }
+
+    tbody.innerHTML = allScheduledTrips.map(t => {
+      const route = loadedRoutes[t.route_id] || { origin: 'Unknown', destination: 'Unknown' };
+      const vehicle = loadedVehicles[t.vehicle_id] || { operator_name: 'Unknown', reg_number: 'Unknown' };
+      const schedule = loadedSchedules[t.schedule_id] || { departure_time: '—', arrival_time: '—' };
+      return `
+        <tr>
+          <td><strong>${route.origin} → ${route.destination}</strong></td>
+          <td>${vehicle.operator_name}</td>
+          <td><span class="badge badge-grey">${vehicle.reg_number}</span></td>
+          <td>⏰ ${schedule.departure_time} - ${schedule.arrival_time}</td>
+          <td>📅 ${t.date}</td>
+          <td><strong>${t.available_seats}</strong> seats</td>
+          <td>
+            <div style="display:flex;gap:4px;">
+              <button class="btn btn-sm" style="background:#E3F2FD;color:#1565C0;border:1px solid #BBDEFB;" onclick="openTripModal('${t.id}')">Edit</button>
+              <button class="btn btn-sm" style="background:var(--clr-primary-bg);color:var(--clr-primary);border:1px solid var(--clr-primary-border);" onclick="deleteTrip('${t.id}')">Delete</button>
+            </div>
+          </td>
+        </tr>
+      `;
+    }).join('');
+  } catch(e) {
+    tbody.innerHTML = `<tr><td colspan="7" style="text-align:center;padding:24px;color:var(--clr-text-muted);">Error: ${e.message}</td></tr>`;
+  }
+};
+
+window.openTripModal = async function(tripId = '') {
+  document.getElementById('trip-form').reset();
+  document.getElementById('trip-id').value = tripId;
+  document.getElementById('trip-modal-title').textContent = tripId ? 'Edit Scheduled Trip' : 'Add Scheduled Trip';
+  
+  // Fill today's date as minimum default for new trips
+  const today = new Date().toISOString().split('T')[0];
+  document.getElementById('trip-date').min = today;
+  document.getElementById('trip-date').value = today;
+
+  // Load dropdown lists
+  const routeSelect = document.getElementById('trip-route');
+  const vehicleSelect = document.getElementById('trip-vehicle');
+  const scheduleSelect = document.getElementById('trip-schedule');
+
+  routeSelect.innerHTML = '<option value="">— Select Route —</option>';
+  vehicleSelect.innerHTML = '<option value="">— Select Vehicle —</option>';
+  scheduleSelect.innerHTML = '<option value="">— Select Schedule —</option>';
+
+  try {
+    const [routesSnap, vehiclesSnap, schedulesSnap] = await Promise.all([
+      getDocs(collection(db, 'routes')),
+      getDocs(collection(db, 'vehicles')),
+      getDocs(collection(db, 'schedules'))
+    ]);
+
+    routesSnap.forEach(d => {
+      const data = d.data();
+      routeSelect.innerHTML += `<option value="${d.id}">${data.origin} → ${data.destination} (${data.distance_km} km)</option>`;
+    });
+
+    vehiclesSnap.forEach(d => {
+      const data = d.data();
+      vehicleSelect.innerHTML += `<option value="${d.id}">${data.operator_name} — ${data.reg_number}</option>`;
+    });
+
+    schedulesSnap.forEach(d => {
+      const data = d.data();
+      scheduleSelect.innerHTML += `<option value="${d.id}">${data.departure_time} - ${data.arrival_time}</option>`;
+    });
+
+    // If editing, pre-fill values
+    if (tripId) {
+      const trip = allScheduledTrips.find(t => t.id === tripId);
+      if (trip) {
+        routeSelect.value = trip.route_id;
+        vehicleSelect.value = trip.vehicle_id;
+        scheduleSelect.value = trip.schedule_id;
+        document.getElementById('trip-date').value = trip.date;
+        document.getElementById('trip-seats').value = trip.available_seats;
+      }
+    }
+  } catch(e) {
+    showToast('Failed to load selections: ' + e.message, 'error');
+  }
+
+  document.getElementById('trip-modal').classList.add('open');
+};
+
+window.closeTripModal = function() {
+  document.getElementById('trip-modal').classList.remove('open');
+};
+
+window.saveTrip = async function(event) {
+  event.preventDefault();
+  const tripId = document.getElementById('trip-id').value;
+  const routeId = document.getElementById('trip-route').value;
+  const vehicleId = document.getElementById('trip-vehicle').value;
+  const scheduleId = document.getElementById('trip-schedule').value;
+  const date = document.getElementById('trip-date').value;
+  const seats = parseInt(document.getElementById('trip-seats').value);
+
+  const saveBtn = document.getElementById('trip-save-btn');
+  saveBtn.disabled = true;
+  saveBtn.textContent = 'Saving…';
+
+  try {
+    const payload = {
+      route_id: routeId,
+      vehicle_id: vehicleId,
+      schedule_id: scheduleId,
+      date: date,
+      available_seats: seats
+    };
+
+    if (tripId) {
+      // Edit mode
+      await updateDoc(doc(db, 'trips', tripId), payload);
+      showToast('Trip updated successfully!', 'success');
+    } else {
+      // Add mode - set default empty booked seats array
+      payload.booked_seats = [];
+      await addDoc(collection(db, 'trips'), payload);
+      showToast('Trip scheduled successfully!', 'success');
+    }
+    closeTripModal();
+    loadTrips();
+  } catch(e) {
+    showToast('Error saving trip: ' + e.message, 'error');
+  } finally {
+    saveBtn.disabled = false;
+    saveBtn.textContent = 'Save Scheduled Trip';
+  }
+};
+
+window.deleteTrip = async function(tripId) {
+  if (!confirm('Are you sure you want to delete this trip? It will cancel any bookings associated with it.')) return;
+  try {
+    await deleteDoc(doc(db, 'trips', tripId));
+    showToast('Trip deleted successfully', 'success');
+    loadTrips();
+  } catch(e) {
+    showToast('Error deleting trip: ' + e.message, 'error');
+  }
+};
+
+// ── Admin Direct Gallery Upload (Auto-Approved) ──
+window.handleAdminUpload = async function() {
+  const fileInput = document.getElementById('admin-gallery-file');
+  const catSelect = document.getElementById('admin-gallery-category');
+  const capInput = document.getElementById('admin-gallery-caption');
+  const uploadBtn = document.getElementById('admin-upload-btn');
+
+  const file = fileInput.files[0];
+  if (!file) { showToast('Please select a photo to upload', 'error'); return; }
+  const category = catSelect.value;
+  const caption = capInput.value.trim() || file.name.split('.')[0].replace(/[-_]/g,' ');
+
+  uploadBtn.disabled = true;
+  uploadBtn.textContent = 'Uploading…';
+
+  try {
+    // Cloudinary setup (from config or default demo)
+    const CLOUD_NAME = 'flyggo-bus-travel';
+    const UPLOAD_PRESET = 'flyggo_gallery';
+
+    const formData = new FormData();
+    formData.append('file', file);
+    formData.append('upload_preset', UPLOAD_PRESET);
+    formData.append('folder', 'flyggo/gallery');
+
+    const res = await fetch(`https://api.cloudinary.com/v1_1/${CLOUD_NAME}/image/upload`, {
+      method: 'POST',
+      body: formData
+    });
+    const data = await res.json();
+
+    if (!data.secure_url) throw new Error('Cloudinary response missing secure URL');
+
+    // Add directly to database as approved: true
+    await addDoc(collection(db, 'gallery'), {
+      url: data.secure_url,
+      public_id: data.public_id,
+      caption: caption,
+      category: category,
+      uploader: 'Administrator',
+      user_id: currentAdmin?.uid || 'admin',
+      created_at: serverTimestamp(),
+      approved: true // ADMIN UPLOAD IS AUTO-APPROVED IMMEDIATELY!
+    });
+
+    showToast('🎉 Photo uploaded and published to gallery!', 'success');
+    fileInput.value = '';
+    capInput.value = '';
+    loadAdminGallery();
+  } catch(e) {
+    showToast('Upload failed: ' + e.message, 'error');
+  } finally {
+    uploadBtn.disabled = false;
+    uploadBtn.textContent = 'Upload';
   }
 };

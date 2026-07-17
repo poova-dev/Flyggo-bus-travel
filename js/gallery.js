@@ -36,10 +36,16 @@ function getDemoPhotos() {
 
 async function loadGallery() {
   try {
-    const q    = query(collection(db, 'gallery'), orderBy('created_at', 'desc'));
+    const q    = query(collection(db, 'gallery'), where('approved', '==', true));
     const snap = await getDocs(q);
     allPhotos  = [];
     snap.forEach(d => allPhotos.push({ id: d.id, ...d.data() }));
+    // Sort in memory to avoid index requirements
+    allPhotos.sort((a,b) => {
+      const ta = a.created_at?.seconds || 0;
+      const tb = b.created_at?.seconds || 0;
+      return tb - ta;
+    });
     if (allPhotos.length === 0) allPhotos = getDemoPhotos();
   } catch(e) {
     allPhotos = getDemoPhotos();

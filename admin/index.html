@@ -374,6 +374,29 @@
               <button class="btn btn-primary btn-sm" onclick="loadAdminGallery()">🔄 Refresh</button>
             </div>
           </div>
+
+          <!-- Admin Upload Form -->
+          <div style="padding:var(--sp-lg);border-bottom:1px solid var(--clr-border);background:var(--clr-surface);display:flex;gap:var(--sp-md);align-items:flex-end;flex-wrap:wrap;">
+            <div class="form-group" style="margin-bottom:0;flex:1;min-width:200px;">
+              <label class="form-label">Upload New Photo (Approved Immediately)</label>
+              <input type="file" id="admin-gallery-file" class="form-control" accept="image/*">
+            </div>
+            <div class="form-group" style="margin-bottom:0;width:150px;">
+              <label class="form-label">Category</label>
+              <select id="admin-gallery-category" class="form-control">
+                <option value="fleet">Fleet</option>
+                <option value="terminal">Terminal</option>
+                <option value="journey" selected>Journey</option>
+                <option value="passengers">Passengers</option>
+              </select>
+            </div>
+            <div class="form-group" style="margin-bottom:0;flex:1;min-width:200px;">
+              <label class="form-label">Caption</label>
+              <input type="text" id="admin-gallery-caption" class="form-control" placeholder="Enter photo caption">
+            </div>
+            <button class="btn btn-primary" onclick="handleAdminUpload()" id="admin-upload-btn" style="height:38px;">Upload</button>
+          </div>
+
           <div id="admin-gallery-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:var(--sp-md);padding:var(--sp-xl);">
             <div style="text-align:center;padding:32px;color:var(--clr-text-muted);grid-column:1/-1;">Loading gallery…</div>
           </div>
@@ -412,12 +435,25 @@
         <div class="data-card">
           <div class="data-card-header">
             <div class="data-card-title">Scheduled Trips</div>
-            <button class="btn btn-primary btn-sm">+ Add Trip</button>
+            <button class="btn btn-primary btn-sm" onclick="openTripModal()">+ Add Trip</button>
           </div>
-          <div style="padding:var(--sp-xl);text-align:center;color:var(--clr-text-muted);">
-            <div style="font-size:2.5rem;margin-bottom:12px;">🚌</div>
-            <p>Trip management coming soon. Add trips through Firebase console for now.</p>
-            <a href="https://console.firebase.google.com" target="_blank" class="btn btn-primary btn-sm mt-md">Open Firebase Console</a>
+          <div style="overflow-x:auto;">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>Route</th>
+                  <th>Operator</th>
+                  <th>Vehicle Reg</th>
+                  <th>Timing</th>
+                  <th>Date</th>
+                  <th>Seats Left</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody id="trips-tbody">
+                <tr><td colspan="7" style="text-align:center;padding:32px;color:var(--clr-text-muted);">Loading trips…</td></tr>
+              </tbody>
+            </table>
           </div>
         </div>
       </div>
@@ -514,7 +550,58 @@
     if (name === 'gallery')  window.loadAdminGallery?.();
     if (name === 'routes')   window.loadRoutes?.();
     if (name === 'users')    window.loadUsers?.();
+    if (name === 'trips')    window.loadTrips?.();
   };
 </script>
+
+<!-- Add/Edit Trip Modal -->
+<div class="modal-overlay" id="trip-modal">
+  <div class="modal" style="max-width:500px;">
+    <div class="modal-header">
+      <h3 class="modal-title" id="trip-modal-title">Add Scheduled Trip</h3>
+      <button class="modal-close" onclick="closeTripModal()">✕</button>
+    </div>
+    <form id="trip-form" onsubmit="saveTrip(event)">
+      <input type="hidden" id="trip-id">
+      
+      <div class="form-group mb-md">
+        <label class="form-label">Select Route *</label>
+        <select class="form-control" id="trip-route" required>
+          <option value="">Loading routes…</option>
+        </select>
+      </div>
+
+      <div class="form-group mb-md">
+        <label class="form-label">Select Vehicle *</label>
+        <select class="form-control" id="trip-vehicle" required>
+          <option value="">Loading vehicles…</option>
+        </select>
+      </div>
+
+      <div class="form-group mb-md">
+        <label class="form-label">Select Daily Schedule *</label>
+        <select class="form-control" id="trip-schedule" required>
+          <option value="">Loading schedules…</option>
+        </select>
+      </div>
+
+      <div class="grid-2 mb-lg" style="gap:var(--sp-md);">
+        <div class="form-group">
+          <label class="form-label">Travel Date *</label>
+          <input type="date" class="form-control" id="trip-date" required>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Available Seats *</label>
+          <input type="number" class="form-control" id="trip-seats" required>
+        </div>
+      </div>
+
+      <button type="submit" class="btn btn-primary w-full btn-lg" id="trip-save-btn" style="border-radius:var(--radius-full);">
+        Save Scheduled Trip
+      </button>
+    </form>
+  </div>
+</div>
+
 </body>
 </html>
