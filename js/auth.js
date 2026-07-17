@@ -44,8 +44,11 @@ function updateNavUI(user, userData) {
   if (user) {
     const name = userData?.display_name || user.email?.split('@')[0] || 'User';
     btn.textContent = `👤 ${name}`;
-    btn.onclick = () => handleSignOut();
-    btn.title = 'Click to sign out';
+    btn.onclick = () => {
+      const isSubDir = window.location.pathname.includes('/admin/');
+      window.location.href = isSubDir ? '../profile.html' : 'profile.html';
+    };
+    btn.title = 'View Profile & Bookings';
 
     // Show admin link if admin
     if (userData?.role === 'admin') {
