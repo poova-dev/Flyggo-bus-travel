@@ -1,7 +1,7 @@
 // ============================================================
 // admin.js — Flyggo Admin Panel Logic
 // ============================================================
-import { db, auth } from '../js/firebase-config.js';
+import { db, auth, CLOUDINARY_CONFIG } from '../js/firebase-config.js';
 import {
   collection, getDocs, doc, updateDoc, deleteDoc,
   query, orderBy, limit, where, serverTimestamp, addDoc, setDoc
@@ -501,13 +501,14 @@ window.handleAdminUpload = async function() {
 
   try {
     // Cloudinary setup (from config or default demo)
-    const CLOUD_NAME = 'flyggo-bus-travel';
-    const UPLOAD_PRESET = 'flyggo_gallery';
+    const CLOUD_NAME = (CLOUDINARY_CONFIG && CLOUDINARY_CONFIG.cloudName !== 'YOUR_CLOUD_NAME') ? CLOUDINARY_CONFIG.cloudName : 'flyggo-bus-travel';
+    const UPLOAD_PRESET = (CLOUDINARY_CONFIG && CLOUDINARY_CONFIG.uploadPreset) || 'flyggo_gallery';
+    const FOLDER = (CLOUDINARY_CONFIG && CLOUDINARY_CONFIG.folder) || 'flyggo/gallery';
 
     const formData = new FormData();
     formData.append('file', file);
     formData.append('upload_preset', UPLOAD_PRESET);
-    formData.append('folder', 'flyggo/gallery');
+    formData.append('folder', FOLDER);
 
     const res = await fetch(`https://api.cloudinary.com/v1_1/${CLOUD_NAME}/image/upload`, {
       method: 'POST',
