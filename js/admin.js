@@ -50,8 +50,11 @@ onAuthStateChanged(auth, async (user) => {
 });
 
 window.signOutAdmin = async () => {
-  await signOut(auth);
-  window.location.href = '../index.html';
+  if (!confirm('Are you sure you want to sign out from the Admin Panel?')) return;
+  try {
+    await signOut(auth);
+    window.location.href = '../index.html';
+  } catch(e) { console.error('Sign out error:', e); }
 };
 
 // ── Dashboard Stats ──

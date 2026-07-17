@@ -124,6 +124,7 @@ window.handleSignUp = async function() {
 
 // ── Sign Out ──
 window.handleSignOut = async function() {
+  if (!confirm('Are you sure you want to sign out?')) return;
   try {
     await signOut(auth);
     showToast('Signed out successfully', 'info');

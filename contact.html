@@ -329,6 +329,38 @@
     }
   };
 </script>
+<!-- Auth Modals -->
+<div class="modal-overlay" id="auth-modal">
+  <div class="modal">
+    <div class="modal-header">
+      <h3 class="modal-title" id="auth-modal-title">Sign In</h3>
+      <button class="modal-close" id="auth-close-btn">✕</button>
+    </div>
+    <div id="auth-form-container">
+      <div class="form-group mb-md" id="name-group" style="display:none;">
+        <label class="form-label">Full Name</label>
+        <input type="text" class="form-control" id="auth-name" placeholder="Enter your name">
+      </div>
+      <div class="form-group mb-md">
+        <label class="form-label">Email Address</label>
+        <input type="email" class="form-control" id="auth-email" placeholder="name@example.com">
+      </div>
+      <div class="form-group mb-lg">
+        <label class="form-label">Password</label>
+        <input type="password" class="form-control" id="auth-password" placeholder="••••••••">
+      </div>
+      <button class="btn btn-primary w-full btn-lg mb-md" id="auth-submit-btn" style="border-radius:var(--radius-full);">Sign In</button>
+      <div style="text-align:center;font-size:0.875rem;color:var(--clr-text-secondary);">
+        <span id="auth-toggle-msg">New to Flyggo?</span>
+        <a href="#" id="auth-toggle-link" style="color:var(--clr-primary);font-weight:600;text-decoration:none;">Create Account</a>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div id="toast-container"></div>
+<script type="module" src="js/auth.js"></script>
+
 <script>
   window.showToast = function(msg, type='info') {
     const icons = { success:'✅', error:'❌', info:'ℹ️' };
@@ -350,7 +382,54 @@
   }), { threshold: 0.08 });
   document.querySelectorAll('.reveal').forEach(el => obs.observe(el));
 
-  function openAuthModal()  { /* auth modal if needed */ }
+  const modal = document.getElementById('auth-modal');
+  const closeBtn = document.getElementById('auth-close-btn');
+  const toggleLink = document.getElementById('auth-toggle-link');
+  const toggleMsg = document.getElementById('auth-toggle-msg');
+  const submitBtn = document.getElementById('auth-submit-btn');
+  const nameGroup = document.getElementById('name-group');
+  const modalTitle = document.getElementById('auth-modal-title');
+
+  let isSignUpMode = false;
+
+  window.openAuthModal = function() {
+    modal.classList.add('open');
+  };
+
+  window.closeAuthModal = function() {
+    modal.classList.remove('open');
+  };
+
+  closeBtn.addEventListener('click', closeAuthModal);
+  modal.addEventListener('click', (e) => { if (e.target === modal) closeAuthModal(); });
+
+  toggleLink.addEventListener('click', (e) => {
+    e.preventDefault();
+    isSignUpMode = !isSignUpMode;
+    if (isSignUpMode) {
+      modalTitle.textContent = 'Create Account';
+      nameGroup.style.display = 'block';
+      submitBtn.textContent = 'Create Account';
+      toggleMsg.textContent = 'Already have an account?';
+      toggleLink.textContent = 'Sign In';
+      submitBtn.onclick = () => window.handleSignUp?.();
+    } else {
+      modalTitle.textContent = 'Sign In';
+      nameGroup.style.display = 'none';
+      submitBtn.textContent = 'Sign In';
+      toggleMsg.textContent = 'New to Flyggo?';
+      toggleLink.textContent = 'Create Account';
+      submitBtn.onclick = () => window.handleSignIn?.();
+    }
+  });
+
+  submitBtn.onclick = () => {
+    if (isSignUpMode) {
+      window.handleSignUp?.();
+    } else {
+      window.handleSignIn?.();
+    }
+  };
 </script>
 </body>
 </html>
