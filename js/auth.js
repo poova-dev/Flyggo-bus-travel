@@ -78,6 +78,7 @@ window.handleSignIn = async function() {
     window.closeAuthModal?.();
     showToast('Welcome back! ✅', 'success');
   } catch (err) {
+    console.error("Sign in error details:", err);
     showToast(getFriendlyError(err.code), 'error');
   } finally {
     btn.classList.remove('loading');
@@ -110,6 +111,7 @@ window.handleSignUp = async function() {
     window.closeAuthModal?.();
     showToast('Account created! Welcome to Flyggo 🎉', 'success');
   } catch (err) {
+    console.error("Signup error details:", err);
     showToast(getFriendlyError(err.code), 'error');
   } finally {
     btn.classList.remove('loading');
@@ -148,6 +150,7 @@ function getFriendlyError(code) {
     'auth/too-many-requests':      'Too many attempts. Please try again later.',
     'auth/network-request-failed': 'Network error. Check your connection.',
     'auth/invalid-credential':     'Invalid email or password.',
+    'auth/operation-not-allowed':  'Email/Password sign-in is disabled in Firebase. Enable it in Firebase Console -> Authentication -> Sign-in method.',
   };
   return messages[code] || 'Authentication failed. Please try again.';
 }
