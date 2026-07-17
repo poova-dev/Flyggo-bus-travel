@@ -11,12 +11,7 @@
       "**/node_modules/**",
       "js/seed-data.js"
     ],
-    "rewrites": [
-      {
-        "source": "**",
-        "destination": "/index.html"
-      }
-    ]
+    "cleanUrls": true
   },
   "auth": {
     "providers": {
